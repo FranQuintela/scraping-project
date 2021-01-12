@@ -9,6 +9,7 @@
   {% block contenido %}
 			{% for row in products %}
 				<dt><b>Name: </b>{{row.name}}</dt>
+				<img src={{row.img}}>
 			    {% comment %} <dt><b>Titulo: </b>{{row.titulo}} ({{row.tituloOriginal}})</dt>
 			    <dd><b>Pais: </b>{{row.pais}} | <b>Director: </b>{{row.director}} | <b>Fecha de Estreno: </b>{{row.fechaEstreno}} </dd>
 			    <dd> <b>Generos: </b>

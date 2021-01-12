@@ -20,7 +20,8 @@ from django.db import models
 #         return self.nombre
 
 class Product(models.Model):
-    name = models.TextField(verbose_name='Título')
+    name = models.TextField(verbose_name='Name')
+    img = models.TextField(verbose_name='Image', default="https://www.syncron.com/wp-content/uploads/2017/03/img-placeholder.png")
     # tituloOriginal = models.TextField(verbose_name='Título Original')
     # fechaEstreno = models.DateField(verbose_name='Fecha de Estreno')
     # pais = models.ForeignKey(Pais,on_delete=models.SET_NULL, null=True)

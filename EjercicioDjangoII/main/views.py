@@ -44,8 +44,12 @@ def populateDB():
         PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
         product_name = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS).string
         print(product_name)
+
+        PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
+        product_img = s.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
+        print(product_img)
         #almacenamos en la BD
-        p = Product.objects.create(name = product_name)
+        p = Product.objects.create(name = product_name, img = product_img)
         num_products = num_products + 1
     return (num_products)
         
