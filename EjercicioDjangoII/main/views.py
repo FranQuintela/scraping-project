@@ -1,6 +1,7 @@
 #encoding:utf-8
-from main.models import Genero, Director, Pais, Pelicula
-from main.forms import BusquedaPorFechaForm, BusquedaPorGeneroForm
+# from main.models import Genero, Director, Pais, Pelicula
+# from main.forms import BusquedaPorFechaForm, BusquedaPorGeneroForm
+from main.models import Product
 from django.shortcuts import render, redirect
 from bs4 import BeautifulSoup
 import urllib.request
@@ -85,7 +86,8 @@ def carga(request):
 
 #muestra el número de películas que hay en la BD
 def inicio(request):
-    num_peliculas=Pelicula.objects.all().count()
+    # num_peliculas=Pelicula.objects.all().count()
+    num_peliculas=0
     return render(request,'inicio.html', {'num_peliculas':num_peliculas})
 
 #muestra un listado con los datos de las películas (título, título original, país, director, géneros y fecha de estreno)
