@@ -5,9 +5,9 @@ from main import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.inicio),
-    # path('carga/',views.carga),
+    path('carga/',views.carga),
     # path('peliculasporpais/', views.lista_peliculasporpais),
-    # path('peliculas/', views.lista_peliculas),
+    path('products/', views.list_products),
     # path('buscarpeliculasporgenero/', views.buscar_peliculasporgenero),
     # path('buscarpeliculasporfecha/', views.buscar_peliculasporfecha),
     ]

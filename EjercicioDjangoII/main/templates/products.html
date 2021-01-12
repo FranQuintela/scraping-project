@@ -3,18 +3,18 @@
 {% extends 'base.html' %}
 
 {% block encabezado %}
-<h1> Peliculas </h1>
+<h1> Products </h1>
 {% endblock %}
 
   {% block contenido %}
-			{% for row in peliculas %}
-			
-			    <dt><b>Titulo: </b>{{row.titulo}} ({{row.tituloOriginal}})</dt>
+			{% for row in products %}
+				<dt><b>Name: </b>{{row.name}}</dt>
+			    {% comment %} <dt><b>Titulo: </b>{{row.titulo}} ({{row.tituloOriginal}})</dt>
 			    <dd><b>Pais: </b>{{row.pais}} | <b>Director: </b>{{row.director}} | <b>Fecha de Estreno: </b>{{row.fechaEstreno}} </dd>
 			    <dd> <b>Generos: </b>
 			    {% for gen in row.generos.all %}
 			    	{{gen.nombre}} 
-			    {% endfor %}
+			    {% endfor %} {% endcomment %}
 			    </dd>		    
 			{% endfor %}
   {% endblock %}

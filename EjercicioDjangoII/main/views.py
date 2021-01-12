@@ -11,74 +11,100 @@ from datetime import datetime
 #función auxiliar que hace scraping en la web y carga los datos en la base datos
 def populateDB():
     #variables para contar el número de registros que vamos a almacenar
-    num_directores = 0
-    num_paises = 0
-    num_generos = 0
-    num_peliculas = 0
+    # num_directores = 0
+    # num_paises = 0
+    # num_generos = 0
+    num_products = 0
     
     #borramos todas las tablas de la BD
-    Director.objects.all().delete()
-    Pais.objects.all().delete()
-    Genero.objects.all().delete()
-    Pelicula.objects.all().delete()
+    # Director.objects.all().delete()
+    # Pais.objects.all().delete()
+    # Genero.objects.all().delete()
+    Product.objects.all().delete()
     
     #extraemos los datos de la web con BS
-    f = urllib.request.urlopen("https://www.elseptimoarte.net/estrenos/")
+    f = urllib.request.urlopen("https://www.zalando.es/hombre-rebajas/?sale=true")
     s = BeautifulSoup(f, "lxml")
-    lista_link_peliculas = s.find("ul", class_="elements").find_all("li")
-    for link_pelicula in lista_link_peliculas:
-        f = urllib.request.urlopen("https://www.elseptimoarte.net/"+link_pelicula.a['href'])
+    
+    PRODUCT_A_CLASS = "g88eG_ oHRBzn LyRfpJ _LM JT3_zV g88eG_"
+    lista_a_products = s.find_all("a", class_= PRODUCT_A_CLASS)
+    # lista_link_peliculas = s.find("ul", class_="elements").find_all("li")
+    # extraemos los enlaces a los productos
+    for a_product in lista_a_products:
+        print("---------------------------------")
+        link_product = "https://www.zalando.es" + a_product['href']
+        print("link_product: "+ link_product)
+        # entramos a la pagina individual del producto
+        f = urllib.request.urlopen(link_product)
         s = BeautifulSoup(f, "lxml")
-        aux = s.find("main", class_="informativo").find_all("section",class_="highlight")
-        datos = aux[0].div.dl
-        titulo_original = datos.find("dt",string="Título original").find_next_sibling("dd").string.strip()
-        #si no tiene título se pone el título original
-        if (datos.find("dt",string="Título")):
-            titulo = datos.find("dt",string="Título").find_next_sibling("dd").string.strip()
-        else:
-            titulo = titulo_original      
-        paises = "".join(datos.find("dt",string="País").find_next_sibling("dd").stripped_strings)
-        pais = paises.split(sep=",")[0]  #sólo se pide el primer país
-        fecha = datetime.strptime(datos.find("dt",string="Estreno en España").find_next_sibling("dd").string.strip(), '%d/%m/%Y')
-        
-        generos_director = s.find("div",id="datos_pelicula")
-        generos = "".join(generos_director.find("p",class_="categorias").stripped_strings)
-        generos = generos.split(sep=",")
-        directores = "".join(generos_director.find("p",class_="director").stripped_strings)
-        director = directores.split(sep=",")[0]  #sólo se pide el primer director 
-        
-        #almacenamos en la BD
-        director_obj, creado = Director.objects.get_or_create(nombre=director)
-        if creado:
-            num_directores = num_directores + 1
-        pais_obj, creado = Pais.objects.get_or_create(nombre=pais)
-        if creado:
-            num_paises = num_paises + 1
-        lista_generos_obj = []
-        for genero in generos:
-            genero_obj, creado = Genero.objects.get_or_create(nombre=genero)
-            lista_generos_obj.append(genero_obj)
-            if creado:
-                num_generos = num_generos + 1
-        p = Pelicula.objects.create(titulo = titulo, tituloOriginal = titulo_original,
-                                fechaEstreno = fecha,
-                                pais = pais_obj,                               
-                                director = director_obj)
-        #añadimos la lista de géneros
-        for g in lista_generos_obj:
-            p.generos.add(g)
-        num_peliculas = num_peliculas + 1
+        # cogemos los datos
+        PRODUCT_DIV_DATA_CLASS = "qMZa55 VHXqc_ rceRmQ _4NtqZU mIlIve"
+        product_data = s.find("div", class_=PRODUCT_DIV_DATA_CLASS)
 
-    return ((num_peliculas, num_directores, num_generos, num_paises))
+        PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
+        product_name = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS).string
+        print(product_name)
+        #almacenamos en la BD
+        p = Product.objects.create(name = product_name)
+        num_products = num_products + 1
+    return (num_products)
+        
+    # for link_pelicula in lista_a_products:
+    #     f = urllib.request.urlopen("https://www.elseptimoarte.net/"+link_pelicula.a['href'])
+    #     s = BeautifulSoup(f, "lxml")
+    #     aux = s.find("main", class_="informativo").find_all("section",class_="highlight")
+    #     datos = aux[0].div.dl
+    #     titulo_original = datos.find("dt",string="Título original").find_next_sibling("dd").string.strip()
+    #     #si no tiene título se pone el título original
+    #     if (datos.find("dt",string="Título")):
+    #         titulo = datos.find("dt",string="Título").find_next_sibling("dd").string.strip()
+    #     else:
+    #         titulo = titulo_original      
+    #     paises = "".join(datos.find("dt",string="País").find_next_sibling("dd").stripped_strings)
+    #     pais = paises.split(sep=",")[0]  #sólo se pide el primer país
+    #     fecha = datetime.strptime(datos.find("dt",string="Estreno en España").find_next_sibling("dd").string.strip(), '%d/%m/%Y')
+        
+    #     generos_director = s.find("div",id="datos_pelicula")
+    #     generos = "".join(generos_director.find("p",class_="categorias").stripped_strings)
+    #     generos = generos.split(sep=",")
+    #     directores = "".join(generos_director.find("p",class_="director").stripped_strings)
+    #     director = directores.split(sep=",")[0]  #sólo se pide el primer director 
+        
+    #     #almacenamos en la BD
+    #     director_obj, creado = Director.objects.get_or_create(nombre=director)
+    #     if creado:
+    #         num_directores = num_directores + 1
+    #     pais_obj, creado = Pais.objects.get_or_create(nombre=pais)
+    #     if creado:
+    #         num_paises = num_paises + 1
+    #     lista_generos_obj = []
+    #     for genero in generos:
+    #         genero_obj, creado = Genero.objects.get_or_create(nombre=genero)
+    #         lista_generos_obj.append(genero_obj)
+    #         if creado:
+    #             num_generos = num_generos + 1
+    #     p = Pelicula.objects.create(titulo = titulo, tituloOriginal = titulo_original,
+    #                             fechaEstreno = fecha,
+    #                             pais = pais_obj,                               
+    #                             director = director_obj)
+    #     #añadimos la lista de géneros
+    #     for g in lista_generos_obj:
+    #         p.generos.add(g)
+    #     num_peliculas = num_peliculas + 1
+
+    # return ((num_peliculas, num_directores, num_generos, num_paises))
         
 #carga los datos desde la web en la BD
 def carga(request):
  
     if request.method=='POST':
-        if 'Aceptar' in request.POST:      
-            num_peliculas, num_directores, num_generos, num_paises = populateDB()
-            mensaje="Se han almacenado: " + str(num_peliculas) +" peliculas, " + str(num_directores) +" directores, " + str(num_generos) +" generos, " + str(num_paises) +" paises"
-            return render(request, 'cargaBD.html', {'mensaje':mensaje})
+        if 'Aceptar' in request.POST:  
+            num_products = populateDB()
+            mensaje="Se han almacenado: " + str(num_products) +" productos " 
+            return render(request, 'cargaBD.html', {'mensaje':mensaje})    
+            # num_peliculas, num_directores, num_generos, num_paises = populateDB()
+            # mensaje="Se han almacenado: " + str(num_peliculas) +" peliculas, " + str(num_directores) +" directores, " + str(num_generos) +" generos, " + str(num_paises) +" paises"
+            # return render(request, 'cargaBD.html', {'mensaje':mensaje})
         else:
             return redirect("/")
            
@@ -87,13 +113,13 @@ def carga(request):
 #muestra el número de películas que hay en la BD
 def inicio(request):
     # num_peliculas=Pelicula.objects.all().count()
-    num_peliculas=0
-    return render(request,'inicio.html', {'num_peliculas':num_peliculas})
+    num_products=Product.objects.all().count()
+    return render(request,'inicio.html', {'num_products':num_products})
 
 #muestra un listado con los datos de las películas (título, título original, país, director, géneros y fecha de estreno)
-def lista_peliculas(request):
-    peliculas=Pelicula.objects.all()
-    return render(request,'peliculas.html', {'peliculas':peliculas})
+def list_products(request):
+    products=Product.objects.all()
+    return render(request,'products.html', {'products':products})
 
 #muestra la lista de películas agrupadas por paises
 def lista_peliculasporpais(request):
