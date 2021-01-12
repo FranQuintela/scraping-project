@@ -1,23 +1,12 @@
 #encoding:utf-8
 from django.db import models
+from django.core.validators import MinValueValidator,MaxValueValidator,URLValidator
 
-# class Genero(models.Model):
-#     nombre = models.CharField(max_length=30, verbose_name='Género')
-
-#     def __str__(self):
-#         return self.nombre
+class UserInformation(models.Model):
+    name = models.TextField(verbose_name='Name')
     
-# class Director(models.Model):
-#     nombre = models.CharField(max_length=30,verbose_name='Director')
-
-#     def __str__(self):
-#         return self.nombre
-    
-# class Pais(models.Model):
-#     nombre = models.CharField(max_length=30,verbose_name='País')
-
-#     def __str__(self):
-#         return self.nombre
+    def __str__(self):
+        return self.name
 
 class Product(models.Model):
     name = models.TextField(verbose_name='Name')
@@ -29,5 +18,12 @@ class Product(models.Model):
     # generos = models.ManyToManyField(Genero)
 
     def __str__(self):
-        return self.titulo
+        return self.name
     
+class Rating(models.Model):
+    user = models.ForeignKey(UserInformation, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rateDate = models.DateField(null=True, blank=True)
+    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    def __str__(self):
+        return str(self.rating)

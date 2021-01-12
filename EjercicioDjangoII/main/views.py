@@ -33,24 +33,52 @@ def populateDB():
     for a_product in lista_a_products:
         print("---------------------------------")
         link_product = "https://www.zalando.es" + a_product['href']
-        print("link_product: "+ link_product)
-        # entramos a la pagina individual del producto
-        f = urllib.request.urlopen(link_product)
-        s = BeautifulSoup(f, "lxml")
-        # cogemos los datos
-        PRODUCT_DIV_DATA_CLASS = "qMZa55 VHXqc_ rceRmQ _4NtqZU mIlIve"
-        product_data = s.find("div", class_=PRODUCT_DIV_DATA_CLASS)
+        # products urls starst with /, with this i get rid of non products links
+        if a_product['href'].startswith('/'): 
+            print("link_product: "+ link_product)
+            # entramos a la pagina individual del producto
+            f = urllib.request.urlopen(link_product)
+            s = BeautifulSoup(f, "lxml")
+            # cogemos los datos
+            PRODUCT_DIV_DATA_CLASS = "qMZa55 VHXqc_ rceRmQ _4NtqZU mIlIve"
+            product_data = s.find("div", class_=PRODUCT_DIV_DATA_CLASS)
 
-        PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
-        product_name = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS).string
-        print(product_name)
+            PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
+            product_name = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS).string
+            print(product_name)
 
-        PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
-        product_img = s.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
-        print(product_img)
-        #almacenamos en la BD
-        p = Product.objects.create(name = product_name, img = product_img)
-        num_products = num_products + 1
+            PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
+            product_img = s.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
+            print(product_img)
+
+            PRODUCT_BUTTON_RATING_CLASS = "kMvGAR _6-WsK3 Md_Vex Nk_Omi _MmCDa to_CKO NN8L-8 K82if3"
+            product_button_rating = product_data.find("button",class_=PRODUCT_BUTTON_RATING_CLASS)
+            if product_button_rating !=None:
+                product_rating = product_button_rating.find("div",class_="_0xLoFW FCIprz").find("div",class_="_0xLoFW")["aria-label"]
+                print(product_rating)
+                # .split("/")[0]
+
+            PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
+            product_ratings = s.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
+            
+            if product_ratings == None:
+                print("no ratings founds")
+            else:
+                print("ratings founds")
+                print(product_ratings)
+
+
+            for product_rating in product_ratings:
+                print(product_rating)
+
+                PRODUCT_H5_RATINGS_CLIENT_CLASS = "ZcZXP0 ka2E9k uMhVZi z-oVg8 pVrzNP"
+                product_rating_client = product_rating.find("div",class_=PRODUCT_H5_RATINGS_CLIENT_CLASS)
+                print(product_rating_client)
+
+            
+            #almacenamos en la BD
+            p = Product.objects.create(name = product_name, img = product_img)
+            num_products = num_products + 1
     return (num_products)
         
     # for link_pelicula in lista_a_products:
