@@ -24,6 +24,6 @@ class Rating(models.Model):
     user = models.ForeignKey(UserInformation, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rateDate = models.DateField(null=True, blank=True)
-    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    rating = models.FloatField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     def __str__(self):
         return str(self.rating)
