@@ -187,9 +187,9 @@ def list_products(request):
     return render(request,'products.html', {'products':products,'users':users,'ratings':ratings})
 
 #muestra la lista de películas agrupadas por paises
-def lista_peliculasporpais(request):
-    peliculas=Pelicula.objects.all().order_by('pais')
-    return render(request,'peliculasporpais.html', {'peliculas':peliculas})
+def list_products_top_rated(request):
+    products=Product.objects.all().order_by('rating')
+    return render(request,'productstoprated.html', {'products':products})
 
 #muestra un formulario con un choicefield con la lista de géneros que hay en la BD. Cuando se seleccione
 #un género muestra los datos de todas las películas de ese género

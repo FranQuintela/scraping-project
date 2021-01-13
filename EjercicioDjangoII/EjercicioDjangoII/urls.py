@@ -8,7 +8,7 @@ urlpatterns = [
     path('carga/',views.carga),
     path('loadRS', views.loadRS),
 
-    # path('peliculasporpais/', views.lista_peliculasporpais),
+    path('productstoprated/', views.list_products_top_rated),
     path('products/', views.list_products),
     # path('buscarpeliculasporgenero/', views.buscar_peliculasporgenero),
     # path('buscarpeliculasporfecha/', views.buscar_peliculasporfecha),

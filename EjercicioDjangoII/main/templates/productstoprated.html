@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block encabezado %}
+<h1> Productos Mejor Valorados </h1>
+{% endblock %}
+
+{% block contenido %}
+			{% regroup products by name as grouped %}
+	    	{% for group in grouped %}
+		    	<h3>Rating: {{group.grouper}} ({{group.list|length}} products)</h3>
+		    		{% for row in group.list %}
+			    		<dt><b>Id: </b>{{row.id}}</dt>
+			    		<dd><b>Name: </b>{{row.name}} </dd>
+			    		{% comment %} <dd> <b>Generos: </b> {% endcomment %}
+			    		{% comment %} {% for gen in row.generos.all %}
+			    			{{gen.nombre}} 
+			    		{% endfor %} {% endcomment %}
+			    		</dd>		    
+			{% endfor %}
+		    	</div>
+	    	{% endfor %}
+{% endblock %}
