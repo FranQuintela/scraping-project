@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>Sistema de Recomendacion - Movielens</title>
+</head>
+<body>
+
+</body>
+</html>
+
+{% extends 'base.html' %}
+
+{% block encabezado %}
+    <h1>Recomendaciones</h1>
+{% endblock %}
+
+{% block contenido %}
+    <h1>Productos Recomendados para el Usuario {{user.id}}</h1>
+    {% for item, score in items %}
+    <ul>
+    <li>Title: {{item.name}}  Score:{{score | floatformat:"2"}}</li>
+    </ul>
+    {% empty %}
+    <h2> Insufficient user data </h2>
+    {% endfor %}
+
+{% endblock %} 

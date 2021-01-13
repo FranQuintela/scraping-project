@@ -8,7 +8,7 @@
 
   {% block contenido %}
 			{% for row in products %}
-				<dt><b>Name: </b>{{row.name}}</dt>
+				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
 				{% comment %} <img src={{row.img}}> {% endcomment %}
 			    {% comment %} <dt><b>Titulo: </b>{{row.titulo}} ({{row.tituloOriginal}})</dt>
 			    <dd><b>Pais: </b>{{row.pais}} | <b>Director: </b>{{row.director}} | <b>Fecha de Estreno: </b>{{row.fechaEstreno}} </dd>
@@ -19,13 +19,12 @@
 			    </dd>		    
 			{% endfor %}
 			{% for row in users %}
-				<dt><b>Name: </b>{{row.name}}</dt>
+				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
 			    </dd>		    
 			{% endfor %}
 			{% for row in ratings %}
-				<dt><b>User name: </b>{{row.user.name}}</dt>
-				<dt><b>Product name: </b>{{row.product.name}}</dt>
-				<dt><b>Rating: </b>{{row.rating}}</dt>
+				<dt><b>Id: </b>{{row.id}} <b>User id: </b>{{row.user.id}} <b>User name: </b>{{row.user.name}} <b>Product name: </b>{{row.product.name}} <b>Rating: </b>{{row.rating}}</dt>
+			
 			    </dd>		    
 			{% endfor %}
   {% endblock %}

@@ -21,6 +21,7 @@ class Product(models.Model):
         return self.name
     
 class Rating(models.Model):
+
     user = models.ForeignKey(UserInformation, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rateDate = models.DateField(null=True, blank=True)

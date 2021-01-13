@@ -1,12 +1,17 @@
 #encoding:utf-8
 # from main.models import Genero, Director, Pais, Pelicula
 # from main.forms import BusquedaPorFechaForm, BusquedaPorGeneroForm
+import shelve
+
 from main.models import Product, UserInformation, Rating
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+
 from bs4 import BeautifulSoup
 import urllib.request
 import lxml
 from datetime import datetime
+from main.recommendations import  transformPrefs, calculateSimilarItems, getRecommendations, getRecommendedItems, topMatches
+from main.forms import UserForm, FilmForm
 
 # For Selenium to work, it must access the browser driver.
 from selenium import webdriver
@@ -31,7 +36,7 @@ def populateDB():
     #variables para contar el número de registros que vamos a almacenar
     # num_directores = 0
     
-    num_users = 0
+    num_users = 1
     num_products = 0
     num_ratings = 0
     
@@ -39,6 +44,7 @@ def populateDB():
     dict_u={}
     dict_r={}
 
+    
     #borramos todas las tablas de la BD
     # Director.objects.all().delete()
     # Pais.objects.all().delete()
@@ -46,6 +52,10 @@ def populateDB():
     Product.objects.all().delete()
     Rating.objects.all().delete()
 
+    print("user_id:" + str(num_users))
+    u = UserInformation.objects.create(id = num_users, name="Test Person")
+    dict_u["Test Person"]=u
+    num_users = num_users +1 
 
     f = urllib.request.urlopen("https://www.zalando.es/hombre-rebajas/?sale=true")
     s = BeautifulSoup(f, "lxml")
@@ -108,10 +118,11 @@ def populateDB():
             product_ratings = s.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
 
             #almacenamos product en la BD
-            p = Product.objects.create(name = product_name, img = product_img)
-            id_p = num_products
-            dict_p[id_p] = p  
+            id_p = num_products  
             num_products = num_products + 1
+            p = Product.objects.create(id = id_p,name = product_name, img = product_img)
+
+            dict_p[id_p] = p
 
             for product_rating in product_ratings:
 
@@ -122,65 +133,29 @@ def populateDB():
 
                 #almacenamos user en la BD
                 if user_name not in dict_u:
-                    u = UserInformation.objects.create(name=product_rating_client)
+                    id_u = num_users
+                    print(print("user_id:" + str(num_users)))
+                    u = UserInformation.objects.create(id = id_u, name=product_rating_client)
                     # id_u = num_users
                     dict_u[user_name]=u
                     num_users = num_users + 1 
 
                 #almacenamos rating en la BD
-                r = Rating.objects.create(user = dict_u[user_name], product = dict_p[id_p], rating = product_rating_rating)
-                # id_r = num_ratings
+                id_r = num_ratings
+                r = Rating.objects.create(id = id_r, user = dict_u[user_name], product = dict_p[id_p], rating = product_rating_rating)
                 dict_r[user_name] = r  
                 num_ratings = num_ratings + 1
 
             # user=u[int(rip[0].strip())], film=m[int(rip[1].strip())], rating=int(rip[2].strip()),
 
+            id_r = num_ratings
+            r = Rating.objects.create(id = id_r, user = dict_u["Test Person"], product = dict_p[id_p], rating = product_rating_rating)
+            dict_r["Test Person"] = r  
+            num_ratings = num_ratings + 1
+
     return (num_products,num_users,num_ratings)
         
-    # for link_pelicula in lista_a_products:
-    #     f = urllib.request.urlopen("https://www.elseptimoarte.net/"+link_pelicula.a['href'])
-    #     s = BeautifulSoup(f, "lxml")
-    #     aux = s.find("main", class_="informativo").find_all("section",class_="highlight")
-    #     datos = aux[0].div.dl
-    #     titulo_original = datos.find("dt",string="Título original").find_next_sibling("dd").string.strip()
-    #     #si no tiene título se pone el título original
-    #     if (datos.find("dt",string="Título")):
-    #         titulo = datos.find("dt",string="Título").find_next_sibling("dd").string.strip()
-    #     else:
-    #         titulo = titulo_original      
-    #     paises = "".join(datos.find("dt",string="País").find_next_sibling("dd").stripped_strings)
-    #     pais = paises.split(sep=",")[0]  #sólo se pide el primer país
-    #     fecha = datetime.strptime(datos.find("dt",string="Estreno en España").find_next_sibling("dd").string.strip(), '%d/%m/%Y')
-        
-    #     generos_director = s.find("div",id="datos_pelicula")
-    #     generos = "".join(generos_director.find("p",class_="categorias").stripped_strings)
-    #     generos = generos.split(sep=",")
-    #     directores = "".join(generos_director.find("p",class_="director").stripped_strings)
-    #     director = directores.split(sep=",")[0]  #sólo se pide el primer director 
-        
-    #     #almacenamos en la BD
-    #     director_obj, creado = Director.objects.get_or_create(nombre=director)
-    #     if creado:
-    #         num_directores = num_directores + 1
-    #     pais_obj, creado = Pais.objects.get_or_create(nombre=pais)
-    #     if creado:
-    #         num_paises = num_paises + 1
-    #     lista_generos_obj = []
-    #     for genero in generos:
-    #         genero_obj, creado = Genero.objects.get_or_create(nombre=genero)
-    #         lista_generos_obj.append(genero_obj)
-    #         if creado:
-    #             num_generos = num_generos + 1
-    #     p = Pelicula.objects.create(titulo = titulo, tituloOriginal = titulo_original,
-    #                             fechaEstreno = fecha,
-    #                             pais = pais_obj,                               
-    #                             director = director_obj)
-    #     #añadimos la lista de géneros
-    #     for g in lista_generos_obj:
-    #         p.generos.add(g)
-    #     num_peliculas = num_peliculas + 1
-
-    # return ((num_peliculas, num_directores, num_generos, num_paises))
+   
         
 #carga los datos desde la web en la BD
 def carga(request):
@@ -242,3 +217,60 @@ def buscar_peliculasporfecha(request):
             peliculas = Pelicula.objects.filter(fechaEstreno__gte=formulario.cleaned_data['fecha'])
             
     return render(request, 'peliculasbusquedaporfecha.html', {'formulario':formulario, 'peliculas':peliculas})
+
+# SISTEMAS DE RECOMENDACION
+# Funcion que carga en el diccionario Prefs todas las puntuaciones de usuarios a peliculas. Tambien carga el diccionario inverso y la matriz de similitud entre items
+# Serializa los resultados en dataRS.dat
+def loadDict():
+    print("Loading dict...")
+    Prefs={}   # matriz de usuarios y puntuaciones a cada a items
+    shelf = shelve.open("dataRS.dat")
+    ratings = Rating.objects.all()
+    for ra in ratings:
+        user = int(ra.user.id)
+        product = int(ra.product.id)
+        rating = float(ra.rating)
+        Prefs.setdefault(user, {})
+        Prefs[user][product] = rating
+    shelf['Prefs']=Prefs
+    shelf['ItemsPrefs']=transformPrefs(Prefs)
+    shelf['SimItems']=calculateSimilarItems(Prefs, n=10)
+    shelf.close()
+    
+
+def loadRS(request):
+    loadDict()
+    return render(request,'loadRS.html')
+
+# APARTADO A
+def recommendedProductsUser(request):
+    if request.method=='GET':
+        form = UserForm(request.GET, request.FILES)
+        if form.is_valid():
+            idUser = form.cleaned_data['id']
+            print("idUser: "+ idUser)
+            user = get_object_or_404(UserInformation, pk=idUser)
+            shelf = shelve.open("dataRS.dat")
+            Prefs = shelf['Prefs']
+            shelf.close()
+            rankings = getRecommendations(Prefs,int(idUser))
+            print("rankings-------------- ")
+            print( rankings)
+
+            recommended = rankings[:2]
+            products = []
+            scores = []
+            for re in recommended:
+                products.append(Product.objects.get(pk=re[1]))
+                scores.append(re[0])
+                print("re-------------- ")
+                print( re)
+            print("products-------------- ")
+            print( products)
+            print("scores-------------- ")
+            print( scores)
+            items= zip(products,scores)
+            
+            return render(request,'recommendationItems.html', {'user': user, 'items': items})
+    form = UserForm()
+    return render(request,'search_user.html', {'form': form})
