@@ -1,4 +1,5 @@
 #encoding:utf-8
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.core.validators import MinValueValidator,MaxValueValidator,URLValidator
 
@@ -11,11 +12,14 @@ class UserInformation(models.Model):
 class Product(models.Model):
     name = models.TextField(verbose_name='Name')
     img = models.TextField(verbose_name='Image', default="https://www.syncron.com/wp-content/uploads/2017/03/img-placeholder.png")
+    color = models.TextField(verbose_name='Color')
+    brand = models.TextField(verbose_name='Brand') 
+    type = models.TextField(verbose_name='Type') 
     # tituloOriginal = models.TextField(verbose_name='Título Original')
     # fechaEstreno = models.DateField(verbose_name='Fecha de Estreno')
     # pais = models.ForeignKey(Pais,on_delete=models.SET_NULL, null=True)
     # director = models.ForeignKey(Director,on_delete=models.SET_NULL, null=True)
-    # generos = models.ManyToManyField(Genero)
+    sizes = ArrayField(models.TextField(), null=True)
 
     def __str__(self):
         return self.name

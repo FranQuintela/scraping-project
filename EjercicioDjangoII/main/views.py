@@ -75,8 +75,16 @@ def populateDB():
             # entramos a la pagina individual del producto
             driver.get(link_product)
             # print(driver.page_source)
-            SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) .z-oVg8"
             
+            SHOW_SIZE_BUTTON = ".lRlpGv > .\\_7Cm1F9"
+            hasSizes = len((driver.find_elements_by_css_selector(SHOW_SIZE_BUTTON))) > 0
+            if hasSizes:
+                driver.find_element(By.CSS_SELECTOR, SHOW_SIZE_BUTTON).click()
+                page_source = driver.page_source
+            else:
+                print("no sizes found")
+
+            SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) .z-oVg8"
             hasRatings = len((driver.find_elements_by_css_selector(SHOW_RATINGS_BUTTON))) > 0
             if hasRatings:
                 SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) ._0xLoFW "
@@ -91,6 +99,7 @@ def populateDB():
             else:
                 print("no rating found")
             page_source = driver.page_source
+
             # print(page_source)
             #extraemos los datos de la web con BS
             s = BeautifulSoup(page_source, 'lxml')
@@ -101,40 +110,75 @@ def populateDB():
 
             PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
             product_name = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS).string
-            print(product_name)
+            # print(product_name)
 
             PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
             product_img = s.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
-            print(product_img)
+            # print(product_img)
 
             PRODUCT_BUTTON_RATING_CLASS = "kMvGAR _6-WsK3 Md_Vex Nk_Omi _MmCDa to_CKO NN8L-8 K82if3"
             product_button_rating = product_data.find("button",class_=PRODUCT_BUTTON_RATING_CLASS)
             if product_button_rating !=None:
                 product_rating_rating = product_button_rating.find("div",class_="_0xLoFW FCIprz").find("div",class_="_0xLoFW")["aria-label"].split("/")[0]
-                print("product_rating_rating: " + product_rating_rating)
+                # print("product_rating_rating: " + product_rating_rating)
                 product_rating_rating = float(product_rating_rating)
 
             PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
             product_ratings = s.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
 
+            product_sizes=[]
+            # Size
+            if(hasSizes):
+                PRODUCT_DIV_SIZE = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
+                size_divs = s.find_all("div", class_= PRODUCT_DIV_SIZE)
+                    
+                for size_div in size_divs:
+                    PRODUCT_DIV_SIZE_CLOTHING = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
+                    PRODUCT_DIV_SIZE_SHOES = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 D--idb"
+
+                    if(size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING) != None):
+                        # Tallas de formato XS,S,M,L,XL
+                        product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING).text
+                        product_type = "Clothing"
+                        product_sizes.append(product_size)
+                    elif(size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES) != None):
+                        # Tallas de formato 36-40-41-47
+                        product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES).text
+                        product_type = "Shoes"
+                        product_sizes.append(product_size)
+
+            
+            # Brand
+            PRODUCT_SPAN_BRAND = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
+            if(size_div.find("span",class_=PRODUCT_SPAN_BRAND) != None):
+                product_brand = size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING).text
+            
+            # Brand
+            PRODUCT_DIV_COLOR = "okmnKS H_-43B"
+            PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
+
+            product_div_color = size_div.find("div",class_=PRODUCT_DIV_COLOR)
+            product_color = product_div_color.find("span",class_=PRODUCT_SPAN_COLOR).text
+                   
+                
             #almacenamos product en la BD
             id_p = num_products  
             num_products = num_products + 1
-            p = Product.objects.create(id = id_p,name = product_name, img = product_img)
+            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, type= product_type, sizes = product_sizes)
 
             dict_p[id_p] = p
 
             for product_rating in product_ratings:
-
+                
                 PRODUCT_H5_RATINGS_CLIENT_CLASS = "ZcZXP0 ka2E9k uMhVZi z-oVg8 pVrzNP"
                 product_rating_client = product_rating.find("h5",class_=PRODUCT_H5_RATINGS_CLIENT_CLASS).string
                 user_name = product_rating_client
-                print("user_name: " + product_rating_client)
+                # print("user_name: " + product_rating_client)
 
                 #almacenamos user en la BD
                 if user_name not in dict_u:
                     id_u = num_users
-                    print(print("user_id:" + str(num_users)))
+                    # print(print("user_id:" + str(num_users)))
                     u = UserInformation.objects.create(id = id_u, name=product_rating_client)
                     # id_u = num_users
                     dict_u[user_name]=u
