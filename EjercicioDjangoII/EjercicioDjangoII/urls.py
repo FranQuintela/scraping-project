@@ -1,6 +1,8 @@
 from django.urls import path
 from django.contrib import admin
 from main import views
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,3 +17,5 @@ urlpatterns = [
     path('recommendedProductsUser', views.recommendedProductsUser),
 
     ]
+
+urlpatterns += staticfiles_urlpatterns()

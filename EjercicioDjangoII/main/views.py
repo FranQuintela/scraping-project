@@ -55,7 +55,7 @@ def populateDB():
     # Director.objects.all().delete()
     # Pais.objects.all().delete()
     UserInformation.objects.all().delete()
-    Product.objects.all().delete()
+    # Product.objects.all().delete()
     Rating.objects.all().delete()
     Size.objects.all().delete()
     
@@ -135,7 +135,7 @@ def populateDB():
             product_button_rating = product_data.find("button",class_=PRODUCT_BUTTON_RATING_CLASS)
             if product_button_rating !=None:
                 product_rating_rating = product_button_rating.find("div",class_="_0xLoFW FCIprz").find("div",class_="_0xLoFW")["aria-label"].split("/")[0]
-                # print("product_rating_rating: " + product_rating_rating)
+                print("product_rating_rating: " + product_rating_rating)
                 product_rating_rating = float(product_rating_rating)
 
             PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
@@ -172,7 +172,7 @@ def populateDB():
             id_p = num_products  
             num_products = num_products + 1
             p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color,
-            current_price = product_current_price, old_price = product_old_price)
+            current_price = product_current_price, old_price = product_old_price, avg_rating=product_rating_rating, url=link_product)
             p.save()
 
             # Size

@@ -24,6 +24,8 @@ class Product(models.Model):
     type = models.TextField(verbose_name='Type') 
     current_price = models.TextField(verbose_name='Color')
     old_price = models.TextField(verbose_name='Color')
+    avg_rating = models.FloatField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=0.0)
+    url = models.TextField(verbose_name='Url')
 
     sizes = models.ManyToManyField(Size)
     # tituloOriginal = models.TextField(verbose_name='Título Original')
