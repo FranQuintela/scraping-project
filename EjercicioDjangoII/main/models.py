@@ -9,17 +9,26 @@ class UserInformation(models.Model):
     def __str__(self):
         return self.name
 
+
+class Size(models.Model):
+    size = models.TextField(verbose_name='Size')
+    product_type = models.TextField(verbose_name='Product Type')
+    def __str__(self):
+        return str(self.size)
+        
 class Product(models.Model):
     name = models.TextField(verbose_name='Name')
     img = models.TextField(verbose_name='Image', default="https://www.syncron.com/wp-content/uploads/2017/03/img-placeholder.png")
     color = models.TextField(verbose_name='Color')
     brand = models.TextField(verbose_name='Brand') 
     type = models.TextField(verbose_name='Type') 
+
+    sizes = models.ManyToManyField(Size)
     # tituloOriginal = models.TextField(verbose_name='Título Original')
     # fechaEstreno = models.DateField(verbose_name='Fecha de Estreno')
     # pais = models.ForeignKey(Pais,on_delete=models.SET_NULL, null=True)
     # director = models.ForeignKey(Director,on_delete=models.SET_NULL, null=True)
-    sizes = ArrayField(models.TextField(), null=True)
+    # sizes = ArrayField(models.TextField(), null=True)
 
     def __str__(self):
         return self.name

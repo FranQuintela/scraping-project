@@ -8,20 +8,18 @@
 
   {% block contenido %}
 			{% for row in products %}
-				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
-				{% comment %} <img src={{row.img}}> {% endcomment %}
-			    {% comment %} <dt><b>Titulo: </b>{{row.titulo}} ({{row.tituloOriginal}})</dt>
-			    <dd><b>Pais: </b>{{row.pais}} | <b>Director: </b>{{row.director}} | <b>Fecha de Estreno: </b>{{row.fechaEstreno}} </dd>
-			    <dd> <b>Generos: </b>
-			    {% for gen in row.generos.all %}
-			    	{{gen.nombre}} 
-			    {% endfor %} {% endcomment %}
+				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}} <b>Color: </b>{{row.color}} <b>Brand: </b>{{row.brand}} <b>Type: </b>{{row.type}} </dt>
+				
+				{% for size in row.sizes.all %}
+					<dt><b>Product type: </b>{{size.product_type}} <b>Size: </b>{{size.size}}</dt>
+					</dd>		    
+				{% endfor %}
 			    </dd>		    
-			{% endfor %}
-			{% for row in users %}
+			{% endfor %}{% for row in users %}
 				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
 			    </dd>		    
 			{% endfor %}
+			
 			{% for row in ratings %}
 				<dt><b>Id: </b>{{row.id}} <b>User id: </b>{{row.user.id}} <b>User name: </b>{{row.user.name}} <b>Product name: </b>{{row.product.name}} <b>Rating: </b>{{row.rating}}</dt>
 			

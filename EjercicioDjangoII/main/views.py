@@ -3,7 +3,7 @@
 # from main.forms import BusquedaPorFechaForm, BusquedaPorGeneroForm
 import shelve
 
-from main.models import Product, UserInformation, Rating
+from main.models import Product, UserInformation, Rating, Size
 from django.shortcuts import render, redirect, get_object_or_404
 
 from bs4 import BeautifulSoup
@@ -39,11 +39,12 @@ def populateDB():
     num_users = 1
     num_products = 0
     num_ratings = 0
-    
+    num_sizes = 0
+
     dict_p={}
     dict_u={}
     dict_r={}
-
+    dict_s={}
     
     #borramos todas las tablas de la BD
     # Director.objects.all().delete()
@@ -79,8 +80,11 @@ def populateDB():
             SHOW_SIZE_BUTTON = ".lRlpGv > .\\_7Cm1F9"
             hasSizes = len((driver.find_elements_by_css_selector(SHOW_SIZE_BUTTON))) > 0
             if hasSizes:
-                driver.find_element(By.CSS_SELECTOR, SHOW_SIZE_BUTTON).click()
-                page_source = driver.page_source
+                try:
+                    driver.find_element(By.CSS_SELECTOR, SHOW_SIZE_BUTTON).click()
+                    page_source = driver.page_source
+                except:
+                    pass
             else:
                 print("no sizes found")
 
@@ -126,7 +130,26 @@ def populateDB():
             PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
             product_ratings = s.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
 
-            product_sizes=[]
+           
+
+            
+            # Brand
+            PRODUCT_SPAN_BRAND = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP ONArL- isiDul"
+            product_brand = "Undefined"
+            if(s.find("span",class_=PRODUCT_SPAN_BRAND) != None):
+                product_brand = s.find("span",class_=PRODUCT_SPAN_BRAND).text
+            
+            # Color
+            PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
+            product_color = s.find("span",class_=PRODUCT_SPAN_COLOR).text
+                   
+                
+            #almacenamos product en la BD
+            id_p = num_products  
+            num_products = num_products + 1
+            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color)
+            p.save()
+
             # Size
             if(hasSizes):
                 PRODUCT_DIV_SIZE = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
@@ -140,31 +163,22 @@ def populateDB():
                         # Tallas de formato XS,S,M,L,XL
                         product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING).text
                         product_type = "Clothing"
-                        product_sizes.append(product_size)
                     elif(size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES) != None):
                         # Tallas de formato 36-40-41-47
                         product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES).text
                         product_type = "Shoes"
-                        product_sizes.append(product_size)
-
-            
-            # Brand
-            PRODUCT_SPAN_BRAND = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
-            if(size_div.find("span",class_=PRODUCT_SPAN_BRAND) != None):
-                product_brand = size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING).text
-            
-            # Brand
-            PRODUCT_DIV_COLOR = "okmnKS H_-43B"
-            PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
-
-            product_div_color = size_div.find("div",class_=PRODUCT_DIV_COLOR)
-            product_color = product_div_color.find("span",class_=PRODUCT_SPAN_COLOR).text
-                   
-                
-            #almacenamos product en la BD
-            id_p = num_products  
-            num_products = num_products + 1
-            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, type= product_type, sizes = product_sizes)
+                    #almacenamos size en la BD
+                    if product_size not in dict_s:
+                        id_s = num_sizes
+                        # print(print("user_id:" + str(num_users)))
+                        s = Size.objects.create(id = id_s, size=product_size, product_type = product_type)
+                        s.save()
+                        # id_u = num_users
+                        dict_s[product_size]=s
+                        num_sizes = num_sizes + 1 
+                    
+                    # añadimos size a product
+                    p.sizes.add(dict_s[product_size])
 
             dict_p[id_p] = p
 
