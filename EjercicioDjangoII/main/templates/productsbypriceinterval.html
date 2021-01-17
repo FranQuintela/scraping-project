@@ -1,12 +1,21 @@
-
-
 {% extends 'base.html' %}
 
 {% block encabezado %}
-<h1> Products </h1>
+<h1> Busqueda de Peliculas por Fecha </h1>
 {% endblock %}
 
-  {% block contenido %}
+{% block contenido %}
+
+    	<form id="formulario" method="post" action=''>{% csrf_token %}
+    		{{formulario}}
+    		<input type='submit' value='Realizar Busqueda'/>
+    	</form>
+	    
+	    <hr>
+
+	    {% if products %}
+		    <h3> Total de Peliculas del Genero:  {{ products|length }}</h3>
+
 			{% for row in products %}
 				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}} <b>Color: </b>{{row.color}} <b>Brand: </b>{{row.brand}} <b>Type: </b>{{row.type}} <b>Price: </b>{{row.current_price}} <b>Old Price: </b>{{row.old_price}}</dt>
 				
@@ -15,14 +24,8 @@
 					</dd>		    
 				{% endfor %}
 			    </dd>		    
-			{% endfor %}{% for row in users %}
-				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
-			    </dd>		    
+			</dl>
 			{% endfor %}
-			
-			{% for row in ratings %}
-				<dt><b>Id: </b>{{row.id}} <b>User id: </b>{{row.user.id}} <b>User name: </b>{{row.user.name}} <b>Product name: </b>{{row.product.name}} <b>Rating: </b>{{row.rating}}</dt>
-			
-			    </dd>		    
-			{% endfor %}
-  {% endblock %}
+		{% endif %}
+	</div>
+{% endblock %}

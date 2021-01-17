@@ -22,6 +22,8 @@ class Product(models.Model):
     color = models.TextField(verbose_name='Color')
     brand = models.TextField(verbose_name='Brand') 
     type = models.TextField(verbose_name='Type') 
+    current_price = models.TextField(verbose_name='Color')
+    old_price = models.TextField(verbose_name='Color')
 
     sizes = models.ManyToManyField(Size)
     # tituloOriginal = models.TextField(verbose_name='Título Original')

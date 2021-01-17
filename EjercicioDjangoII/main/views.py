@@ -11,11 +11,16 @@ import urllib.request
 import lxml
 from datetime import datetime
 from main.recommendations import  transformPrefs, calculateSimilarItems, getRecommendations, getRecommendedItems, topMatches
-from main.forms import UserForm, FilmForm
+from main.forms import TypeForm, PriceForm
 
 # For Selenium to work, it must access the browser driver.
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+# Woosh
+from whoosh.index import create_in,open_dir
+from whoosh.fields import Schema, TEXT, DATETIME, KEYWORD
+from whoosh.qparser import QueryParser, MultifieldParser, OrGroup
+import re, os, shutil
 
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
@@ -52,7 +57,13 @@ def populateDB():
     UserInformation.objects.all().delete()
     Product.objects.all().delete()
     Rating.objects.all().delete()
+    Size.objects.all().delete()
+    
+    sizes_clothing = ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"]
 
+    # range(30,50,0.5)
+    sizes_shoes = [str(i/2) for i in range(60, 100)]
+    print(sizes_shoes)
     print("user_id:" + str(num_users))
     u = UserInformation.objects.create(id = num_users, name="Test Person")
     dict_u["Test Person"]=u
@@ -143,18 +154,32 @@ def populateDB():
             PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
             product_color = s.find("span",class_=PRODUCT_SPAN_COLOR).text
                    
-                
+            # current_price
+            PRODUCT_SPAN_CURRENT_PRICE = "uqkIZw ka2E9k uMhVZi dgII7d z-oVg8 _88STHx cMfkVL"
+            product_current_price = s.find("span",class_=PRODUCT_SPAN_CURRENT_PRICE).text
+            product_current_price = re.sub('desde ', '', product_current_price)
+            product_current_price = re.sub('€', '', product_current_price)
+            product_current_price = re.sub(',', '.', product_current_price)
+
+
+            # old_price
+            PRODUCT_SPAN_OLD_PRICE = "uqkIZw ka2E9k uMhVZi FxZV-M z-oVg8 weHhRC ZiDB59"
+            product_old_price = s.find("span",class_=PRODUCT_SPAN_OLD_PRICE).text
+            product_old_price = re.sub('desde ', '', product_old_price)
+            product_old_price = re.sub('€', '', product_old_price)
+            product_old_price = re.sub(',', '.', product_old_price)
             #almacenamos product en la BD
             id_p = num_products  
             num_products = num_products + 1
-            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color)
+            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color,
+            current_price = product_current_price, old_price = product_old_price)
             p.save()
 
             # Size
             if(hasSizes):
                 PRODUCT_DIV_SIZE = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
                 size_divs = s.find_all("div", class_= PRODUCT_DIV_SIZE)
-                    
+                product_type = "Undefined"
                 for size_div in size_divs:
                     PRODUCT_DIV_SIZE_CLOTHING = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
                     PRODUCT_DIV_SIZE_SHOES = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 D--idb"
@@ -162,15 +187,29 @@ def populateDB():
                     if(size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING) != None):
                         # Tallas de formato XS,S,M,L,XL
                         product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_CLOTHING).text
-                        product_type = "Clothing"
+                        
                     elif(size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES) != None):
                         # Tallas de formato 36-40-41-47
                         product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_SHOES).text
-                        product_type = "Shoes"
                     #almacenamos size en la BD
                     if product_size not in dict_s:
                         id_s = num_sizes
-                        # print(print("user_id:" + str(num_users)))
+
+                        if product_size in sizes_clothing:
+                            product_type = "Clothing"
+
+                        else:
+                            try:
+                                product_size = str(float(product_size))
+                            except:
+                                pass
+                            if product_size in sizes_shoes:
+                                # print("product_size shoes: " + product_size)
+                                product_type = "Shoes"
+                            else:
+                                print("product_size: " + product_size)
+                                product_type = "Undetermined"
+                            
                         s = Size.objects.create(id = id_s, size=product_size, product_type = product_type)
                         s.save()
                         # id_u = num_users
@@ -178,7 +217,17 @@ def populateDB():
                         num_sizes = num_sizes + 1 
                     
                     # añadimos size a product
+                    
                     p.sizes.add(dict_s[product_size])
+                   
+                
+                print("product_type" + product_type)
+                first_size = p.sizes.first()
+                if first_size != None:
+                    product_type = first_size.product_type
+                p.type = product_type
+                print(" ptype" + p.type)
+                p.save()
 
             dict_p[id_p] = p
 
@@ -213,7 +262,33 @@ def populateDB():
 
     return (num_products,num_users,num_ratings)
         
-   
+#almacena cada pelicula en un documento de un Ã­ndice. Usa la funciÃ³n extraer_peliculas() para obtener la lista de peliculas 
+def almacenar_datos():
+    
+    #define el esquema de la informaciÃ³n
+    # schem = Schema(name=TEXT(stored=True), img=TEXT(stored=True), pais=KEYWORD(stored=True,commas=True), fecha=DATETIME(stored=True), director=KEYWORD(stored=True,commas=True), generos=KEYWORD(stored=True,commas=True), sinopsis=TEXT)
+
+    schem = Schema(name=TEXT(stored=True), img=TEXT, color=TEXT(stored=True),  brand=TEXT(stored=True),  type=TEXT(stored=True),
+    current_price=TEXT(stored=True))
+    # sizes=KEYWORD(stored=True,commas=True)
+    #eliminamos el directorio del Ã­ndice, si existe
+    if os.path.exists("Index"):
+        shutil.rmtree("Index")
+    os.mkdir("Index")
+    
+    #creamos el Ã­ndice
+    ix = create_in("Index", schema=schem)
+    #creamos un writer para poder aÃ±adir documentos al indice
+    writer = ix.writer()
+    i=0
+    products=Product.objects.all()
+
+    for product in products:
+        #aÃ±ade cada pelicula de la lista al Ã­ndice
+        writer.add_document(name=product.name, img=product.img, color=product.color, brand=product.brand, type=product.type, current_price = product.current_price)    
+        i+=1
+    writer.commit()
+    print("Fin de indexado", "Se han indexado "+str(i)+ " productos")    
         
 #carga los datos desde la web en la BD
 def carga(request):
@@ -221,6 +296,8 @@ def carga(request):
     if request.method=='POST':
         if 'Aceptar' in request.POST:  
             num_products, num_users, num_ratings = populateDB()
+            almacenar_datos()
+
             mensaje="Se han almacenado: " + str(num_products) +" products " + str(num_users) +" users "  + str(num_ratings) +" ratings " 
             return render(request, 'cargaBD.html', {'mensaje':mensaje})    
             # num_peliculas, num_directores, num_generos, num_paises = populateDB()
@@ -251,30 +328,73 @@ def list_products_top_rated(request):
 
 #muestra un formulario con un choicefield con la lista de géneros que hay en la BD. Cuando se seleccione
 #un género muestra los datos de todas las películas de ese género
-def buscar_peliculasporgenero(request):
-    formulario = BusquedaPorGeneroForm()
-    peliculas = None
-    
+def search_products_by_type(request):
+    formulario = TypeForm()
+    products = []
+
     if request.method=='POST':
-        formulario = BusquedaPorGeneroForm(request.POST)      
+        formulario = TypeForm(request.POST)
         if formulario.is_valid():
-            genero=Genero.objects.get(id=formulario.cleaned_data['genero'])
-            peliculas = genero.pelicula_set.all()
-            
-    return render(request, 'peliculasbusquedaporgenero.html', {'formulario':formulario, 'peliculas':peliculas})
+            type = formulario.cleaned_data['type']
+
+            ix=open_dir("Index")      
+            with ix.searcher() as searcher:
+                print("buscar peliculas type:")
+                print(type)
+                
+                # query = QueryParser("size", ix.schema).parse(str(size))
+                query = QueryParser("type", ix.schema).parse(type)
+                results = searcher.search(query) #sÃ³lo devuelve los 10 primeros
+                for r in results: 
+                    # print(r['name'])
+                    product = Product.objects.all().filter(name=r['name']).first()
+                    # print(product)
+                    products.append(product)
+
+                print("results: ----------------------------")
+                print(results)
+                print("products: ----------------------------")
+                print(products)
+
+    # peliculas = genero.pelicula_set.all()
+    return render(request, 'productsbytype.html', {'formulario':formulario, 'products':products})
 
 #muestra un formulario con un datefield. Cuando se escriba una fecha muestra los datos de todas las
 #las películas con una fecha de estreno posterior a ella
-def buscar_peliculasporfecha(request):
-    formulario = BusquedaPorFechaForm()
-    peliculas = None
-    
+def search_products_by_price_interval(request):
+
+    formulario = PriceForm()
+    products = []
+
     if request.method=='POST':
-        formulario = BusquedaPorFechaForm(request.POST)      
+        formulario = PriceForm(request.POST)
         if formulario.is_valid():
-            peliculas = Pelicula.objects.filter(fechaEstreno__gte=formulario.cleaned_data['fecha'])
-            
-    return render(request, 'peliculasbusquedaporfecha.html', {'formulario':formulario, 'peliculas':peliculas})
+            price_interval = formulario.cleaned_data['price_interval']
+
+            ix=open_dir("Index")      
+            with ix.searcher() as searcher:
+                print("buscar peliculas price:")
+                print(price_interval)
+
+                
+                aux = price_interval.split()
+                price_interval = '['+ aux[0] + ' TO ' + aux[1] +']'
+                query = QueryParser("current_price", ix.schema).parse(price_interval)
+
+                results = searcher.search(query) #sÃ³lo devuelve los 10 primeros
+                for r in results: 
+                    # print(r['name'])
+                    product = Product.objects.all().filter(name=r['name']).first()
+                    # print(product)
+                    products.append(product)
+
+                print("results: ----------------------------")
+                print(results)
+                print("products: ----------------------------")
+                print(products)
+
+    # peliculas = genero.pelicula_set.all()
+    return render(request, 'productsbypriceinterval.html', {'formulario':formulario, 'products':products})
 
 # SISTEMAS DE RECOMENDACION
 # Funcion que carga en el diccionario Prefs todas las puntuaciones de usuarios a peliculas. Tambien carga el diccionario inverso y la matriz de similitud entre items
