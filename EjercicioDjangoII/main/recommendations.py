@@ -22,18 +22,26 @@ def sim_distance(prefs, person1, person2):
 def sim_pearson(prefs, p1, p2):
     # Get the list of mutually rated items
     si = {}
-    for item in prefs[p1]: 
-        if item in prefs[p2]: si[item] = 1
+    for item in prefs[p1]:
+        # print("item p1:--------" + str(item)) 
+        if item in prefs[p2]:
+            # print("coincide con p2:--------"+ str(item)) 
+            si[item] = 1
 
     # if they are no ratings in common, return 0
-    if len(si) == 0: return 0
+    if len(si) == 0: 
+        # print("es por el len")
+        return 0
 
     # Sum calculations
     n = len(si)
+    # print("item n:--------" + str(n)) 
 
     # Sums of all the preferences
     sum1 = sum([prefs[p1][it] for it in si])
     sum2 = sum([prefs[p2][it] for it in si])
+    # print("item sum1:--------" + str(sum1)) 
+    # print("item sum2:--------" + str(sum2)) 
 
     # Sums of the squares
     sum1Sq = sum([pow(prefs[p1][it], 2) for it in si])
@@ -41,11 +49,16 @@ def sim_pearson(prefs, p1, p2):
 
     # Sum of the products
     pSum = sum([prefs[p1][it] * prefs[p2][it] for it in si])
+    # print("item pSum:--------" + str(pSum))
 
     # Calculate r (Pearson score)
     num = pSum - (sum1 * sum2 / n)
+    # print("item num:--------" + str(num)) 
+    # print("item den:--------" + str((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))) 
     den = sqrt((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))
-    if den == 0: return 0
+    if den == 0: 
+        # print("es por el den")
+        return 0
 
     r = num / den
 
@@ -64,15 +77,17 @@ def topMatches(prefs, person, n=5, similarity=sim_pearson):
 def getRecommendations(prefs, person, similarity=sim_pearson):
     totals = {}
     simSums = {}
-    print("prefs--------")
+    # print("prefs--------")
     # print(prefs)
     for other in prefs:
+        # print("other--------")
+        # print(str(other) + ", " + str(person) + ", ")
         # don't compare me to myself
         if other == person: continue
         sim = similarity(prefs, person, other)
         # ignore scores of zero or lower
         if sim <= 0: 
-            print("sim:"+ str(sim) + "---------")
+            # print("sim:"+ str(sim) + "---------")
             continue
         for item in prefs[other]:
             print("item---------")

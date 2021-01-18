@@ -11,3 +11,6 @@ class TypeForm(forms.Form):
     
 class PriceForm(forms.Form):
     price_interval = forms.CharField(label='Price Interval')
+
+class UserForm(forms.Form):
+    id = forms.CharField(label='User ID')

@@ -65,7 +65,7 @@
 		<section class="page-section" id="about">
 		
         <div id="portfolio">
-			{% regroup products by rating as grouped %}
+			{% regroup products by avg_rating as grouped %}
 	    	{% for group in grouped %}
 		    <h3>Rating: {{group.grouper}} ({{group.list|length}} products)</h3>
 
@@ -73,7 +73,7 @@
                 <div class="row no-gutters">
 				{% for row in  group.list %}
 					<div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box container" href={{row.img}}>
+                        <a class="portfolio-box container" href={{row.url}}>
 						<div class="row">
 							<div class="col-lg-4 col-sm-6">
 								<img class="img-fluid" src={{row.img}} alt="" />
@@ -88,7 +88,7 @@
 							<b>Price: </b> {{row.current_price}}</br>
 							<b>Brand: </b> {{row.brand}}</br>
 							<b>Color: </b> {{row.color}}</br>
-							<b>Rating: </b> {{row.rating}}</br>
+							<b>Rating: </b> {{row.avg_rating}}</br>
 
 								{% comment %} <div class="project-name "> {{row.name}} </div> {% endcomment %}
 							</div>

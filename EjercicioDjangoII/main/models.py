@@ -22,10 +22,10 @@ class Product(models.Model):
     color = models.TextField(verbose_name='Color')
     brand = models.TextField(verbose_name='Brand') 
     type = models.TextField(verbose_name='Type') 
-    current_price = models.TextField(verbose_name='Color')
-    old_price = models.TextField(verbose_name='Color')
-    avg_rating = models.FloatField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=0.0)
-    url = models.TextField(verbose_name='Url')
+    current_price = models.TextField(verbose_name='CurrentPrice')
+    old_price = models.TextField(verbose_name='OldPrice')
+    avg_rating = models.FloatField(verbose_name='AvgRating', validators=[MinValueValidator(1), MaxValueValidator(5)], default=0.0)
+    url = models.TextField(verbose_name='Url', default="Undefined")
 
     sizes = models.ManyToManyField(Size)
     # tituloOriginal = models.TextField(verbose_name='Título Original')
@@ -44,4 +44,4 @@ class Rating(models.Model):
     rateDate = models.DateField(null=True, blank=True)
     rating = models.FloatField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     def __str__(self):
-        return str(self.rating)
+        return str(str(self.user.id) + ", "+ str(self.product.id) + ", "+ str(self.rating))

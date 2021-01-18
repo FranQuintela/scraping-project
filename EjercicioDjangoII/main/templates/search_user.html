@@ -5,9 +5,26 @@
 {% endblock %}
 
   {% block contenido %}
-    <form id='form' method='get' action=''>
-    {{form.as_p}}
-    <p><input type='submit' value='Confirm'/></p>
-</form>  
-
-{% endblock %} 
+  {% comment %} <h3>AVISO: Este proceso es lento, borra la base de datos actual y requiere conexion a internet</h3>
+    <form id='formulario' method='post' action=''>{% csrf_token %}
+		<input type="submit" name="Aceptar" value="Aceptar">
+		<input type="submit" name="Cancelar" value="Cancelar">
+	</form>  {% endcomment %}
+  <!-- About-->
+        <section class="page-section bg-primary" id="about">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="text-white mt-0">We've got what you need!</h2>
+                        <hr class="divider light my-4" />
+                        <p class="text-white-50 mb-4">Este proceso es lento, borra la base de datos actual y requiere conexion a internet</p>
+                        <form id='form' method='get' action=''>
+                            {{form.as_p}}
+                            <p><input type='submit' value='Confirm'/></p>
+                        </form 
+                        {% comment %} <a class="btn btn-light btn-xl js-scroll-trigger" href="#services">Get Started!</a> {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        </section>
+  {% endblock %}
