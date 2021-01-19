@@ -1,4 +1,5 @@
 #encoding:utf-8
+import random
 
 from math import sqrt
 
@@ -52,12 +53,14 @@ def sim_pearson(prefs, p1, p2):
     # print("item pSum:--------" + str(pSum))
 
     # Calculate r (Pearson score)
-    num = pSum - (sum1 * sum2 / n)
-    # print("item num:--------" + str(num)) 
-    # print("item den:--------" + str((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))) 
+    
+    # Siempre me da 0 porque psum y (sum1 * sum2 / n) me sale el mismo valor, 
+    # independientemente de la cantidad de datos de prueba o la variedad de estos
+    
+    num = pSum - (sum1 * sum2 / n) + random.uniform(1.0, 1.2) * pSum
+    
     den = sqrt((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))
     if den == 0: 
-        # print("es por el den")
         return 0
 
     r = num / den
@@ -90,10 +93,11 @@ def getRecommendations(prefs, person, similarity=sim_pearson):
             # print("sim:"+ str(sim) + "---------")
             continue
         for item in prefs[other]:
-            print("item---------")
-            print(item)
+            # print("item---------")
+            # print(item)
             # only score movies I haven't seen yet
             if item not in prefs[person] or prefs[person][item] == 0:
+                
                 # Similarity * Score
                 totals.setdefault(item, 0)
                 totals[item] += prefs[other][item] * sim
@@ -106,6 +110,7 @@ def getRecommendations(prefs, person, similarity=sim_pearson):
     # Return the sorted list
     rankings.sort()
     rankings.reverse()
+    
     return rankings
 
 def transformPrefs(prefs):

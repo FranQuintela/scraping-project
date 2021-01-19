@@ -73,217 +73,219 @@ def populateDB():
 
     
     # ----------------------CARGAMOS LA PAGINA PRINCIPAL------------------
+    for i in range(1,5):
 
-    f = urllib.request.urlopen("https://www.zalando.es/hombre-rebajas/?sale=true")
-    web_code = BeautifulSoup(f, "lxml")
+        f = urllib.request.urlopen("https://www.zalando.es/hombre-rebajas/?sale=true&p="+str(i))
+        # &p=2
+        web_code = BeautifulSoup(f, "lxml")
 
-    PRODUCT_A_CLASS = "g88eG_ oHRBzn LyRfpJ _LM JT3_zV g88eG_"
-    lista_a_products = web_code.find_all("a", class_= PRODUCT_A_CLASS)
-    
-    
-    # ----------------------CARGAMOS LAS PAGINAS DE CADA PRODUCTO------------------
-    for a_product in lista_a_products:
-        print("---------------------------------")
-        link_product = "https://www.zalando.es" + a_product['href']
-        print("link_product: "+ link_product)
+        PRODUCT_A_CLASS = "g88eG_ oHRBzn LyRfpJ _LM JT3_zV g88eG_"
+        lista_a_products = web_code.find_all("a", class_= PRODUCT_A_CLASS)
+        
+        
+        # ----------------------CARGAMOS LAS PAGINAS DE CADA PRODUCTO------------------
+        for a_product in lista_a_products:
+            print("---------------------------------")
+            link_product = "https://www.zalando.es" + a_product['href']
+            print("link_product: "+ link_product)
 
-        # products urls starst with /, with this i get rid of non products links
-        if a_product['href'].startswith('/'): 
-           
-        # CARGAMOS LOS DATOS OCULTOS UTILIZANDO SELENIUM PARA SIMULAR LOS CLICKS EN LOS DESPLEGABLES
-            driver.get(link_product)   
-
-            # ----------------------CARGAMOS SIZES------------------
-            SHOW_SIZE_BUTTON = ".lRlpGv > .\\_7Cm1F9"
-            hasSizes = len((driver.find_elements_by_css_selector(SHOW_SIZE_BUTTON))) > 0
-            if hasSizes:
-                try:
-                    driver.find_element(By.CSS_SELECTOR, SHOW_SIZE_BUTTON).click()
-                    page_source = driver.page_source
-                except:
-                    pass
+            # products urls starst with /, with this i get rid of non products links
+            if a_product['href'].startswith('/'): 
             
-            # ----------------------CARGAMOS RATINGS------------------
-            SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) .z-oVg8"
-            hasRatings = len((driver.find_elements_by_css_selector(SHOW_RATINGS_BUTTON))) > 0
-            if hasRatings:
-                SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) ._0xLoFW "
-                driver.find_element(By.CSS_SELECTOR, SHOW_RATINGS_BUTTON).send_keys('\n')
+            # CARGAMOS LOS DATOS OCULTOS UTILIZANDO SELENIUM PARA SIMULAR LOS CLICKS EN LOS DESPLEGABLES
+                driver.get(link_product)   
 
-            # ----------------------CARGAMOS MAS RATINGS------------------
-                # print(page_source)
-                hasMoreRatings = True
-                while hasMoreRatings is True:
+                # ----------------------CARGAMOS SIZES------------------
+                SHOW_SIZE_BUTTON = ".lRlpGv > .\\_7Cm1F9"
+                hasSizes = len((driver.find_elements_by_css_selector(SHOW_SIZE_BUTTON))) > 0
+                if hasSizes:
                     try:
-                        driver.find_element(By.CSS_SELECTOR, "._8P5KBX > .K82if3").click()
+                        driver.find_element(By.CSS_SELECTOR, SHOW_SIZE_BUTTON).click()
+                        page_source = driver.page_source
                     except:
-                        hasMoreRatings = False
+                        pass
                 
-                # print(page_source)
-                # for x in range(len(more_buttons)):
-                #     if more_buttons[x].is_displayed():
-                #         driver.execute_script("arguments[0].click();", more_buttons[x])
-                #         time.sleep(1)
-                page_source = driver.page_source
-            
-            page_source = driver.page_source
+                # ----------------------CARGAMOS RATINGS------------------
+                SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) .z-oVg8"
+                hasRatings = len((driver.find_elements_by_css_selector(SHOW_RATINGS_BUTTON))) > 0
+                if hasRatings:
+                    SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) ._0xLoFW "
+                    driver.find_element(By.CSS_SELECTOR, SHOW_RATINGS_BUTTON).send_keys('\n')
 
-            # ----------------------EXTRAEMOS DATOS CON BEAUTIFUL SOUP------------------
-            web_code = BeautifulSoup(page_source, 'lxml')
-
-            # ----------------------EXTRAEMOS SECCION CON DATOS PRINCIPALES ------------------
-            PRODUCT_DIV_DATA_CLASS = "qMZa55 VHXqc_ rceRmQ _4NtqZU mIlIve"
-            product_data = web_code.find("div", class_=PRODUCT_DIV_DATA_CLASS)
-            # si no tiene este div no es un product, puede ser alguna promoción o una sección de outfits, saltamos esta iteración
-            if product_data == None:
-                continue 
-
-            # ----------------------EXTRAEMOS NAME----------------------
-            PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
-            product_name_h1 = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS)
-            product_name = "Undefined"
-            if(product_name_h1 != None):
-                product_name = product_name_h1.string
-
-            # ----------------------EXTRAEMOS IMG----------------------
-
-            PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
-            product_img = web_code.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
-
-            # ----------------------EXTRAEMOS AVG_RATING----------------------
-            # vamos a tener que iterar por varios resultados para ver cual es el de rating porque no hay un id o clase único del rating
-            PRODUCT_BUTTON_RATING_CLASS = "kMvGAR _6-WsK3 Md_Vex Nk_Omi _MmCDa to_CKO NN8L-8 K82if3"
-            posible_product_buttons_rating = product_data.find_all("button",class_=PRODUCT_BUTTON_RATING_CLASS)
-            for posible_product_button_rating in posible_product_buttons_rating:
-                product_buttons_rating = posible_product_button_rating.find("div",class_="_0xLoFW FCIprz").find("div",class_="_0xLoFW")
-                
-                if product_buttons_rating !=None:
-                    product_rating_rating = product_buttons_rating["aria-label"].split("/")[0]
-                    product_rating_rating = float(product_rating_rating) 
-            
-            # ----------------------EXTRAEMOS BRAND----------------------
-            PRODUCT_SPAN_BRAND = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP ONArL- isiDul"
-            product_brand = "Undefined"
-            if(web_code.find("span",class_=PRODUCT_SPAN_BRAND) != None):
-                product_brand = web_code.find("span",class_=PRODUCT_SPAN_BRAND).text
-            
-            # ----------------------EXTRAEMOS COLOR----------------------
-            PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
-            product_color = web_code.find("span",class_=PRODUCT_SPAN_COLOR).text
-                   
-            # ----------------------EXTRAEMOS CURRENT_PRICE----------------------
-            PRODUCT_SPAN_CURRENT_PRICE = "uqkIZw ka2E9k uMhVZi dgII7d z-oVg8 _88STHx cMfkVL"
-            product_current_price = web_code.find("span",class_=PRODUCT_SPAN_CURRENT_PRICE).text
-            # Ajustamos la información a lo que necesitamos
-            product_current_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_current_price)))
-
-            # ----------------------EXTRAEMOS OLD_PRICE----------------------
-            PRODUCT_SPAN_OLD_PRICE = "uqkIZw ka2E9k uMhVZi FxZV-M z-oVg8 weHhRC ZiDB59"
-            product_old_price = web_code.find("span",class_=PRODUCT_SPAN_OLD_PRICE).text
-            # Ajustamos la información a lo que necesitamos
-            product_old_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_old_price)))
-
-            # ----------------------ALMACENAMOS PRODUCT EN LA DB----------------------
-            id_p = num_products  
-            num_products = num_products + 1
-            p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color,
-            current_price = product_current_price, old_price = product_old_price, avg_rating=product_rating_rating, url=link_product )
-            p.save()
-            # 
-            # 
-
-            # ----------------------EXTRAEMOS SIZES ----------------------
-            if(hasSizes):
-                # la unica forma de extraer el tipo del producto es a través de las tallas asi que lo extraeremos aquí
-                product_type = "Undefined"
-
-                PRODUCT_DIV_SIZE = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
-                size_divs = web_code.find_all("div", class_= PRODUCT_DIV_SIZE)
-
-                for size_div in size_divs:
-                    PRODUCT_DIV_SIZE_1 = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
-                    PRODUCT_DIV_SIZE_2 = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 D--idb"
-
-                    if(size_div.find("span",class_=PRODUCT_DIV_SIZE_1) != None):
-                        product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_1).text
-                        
-                    elif(size_div.find("span",class_=PRODUCT_DIV_SIZE_2) != None):
-                        product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_2).text
-
-            # ----------------------ALMACENAMOS SIZE EN LA DB----------------------
-                    if product_size not in dict_s:
-                        id_s = num_sizes
-
-                        if product_size in sizes_clothing:
-                            product_type = "Clothing"
-
-                        else:
-                            try:
-                                # aquí convertimos mapeamos integers a double: talla 40 -> 40.0
-                                product_size = str(float(product_size))
-                            except:
-                                pass
-                            if product_size in sizes_shoes:
-                                product_type = "Shoes"
-                            else:
-                                product_type = "Undetermined"
-                            
-                        s = Size.objects.create(id = id_s, size=product_size, product_type = product_type)
-                        s.save()
-                        dict_s[product_size]=s
-                        num_sizes = num_sizes + 1 
+                # ----------------------CARGAMOS MAS RATINGS------------------
+                    # print(page_source)
+                    hasMoreRatings = True
+                    while hasMoreRatings is True:
+                        try:
+                            driver.find_element(By.CSS_SELECTOR, "._8P5KBX > .K82if3").click()
+                        except:
+                            hasMoreRatings = False
                     
-            # ----------------------ASOCIAMOS LAS TALLAS DEL PRODUCTO----------------------                    
-                    p.sizes.add(dict_s[product_size])
+                    # print(page_source)
+                    # for x in range(len(more_buttons)):
+                    #     if more_buttons[x].is_displayed():
+                    #         driver.execute_script("arguments[0].click();", more_buttons[x])
+                    #         time.sleep(1)
+                    page_source = driver.page_source
+                
+                page_source = driver.page_source
 
-            # ----------------------ACTUALIZAMOS EL TIPO DEL PRODUCTO A TRAVÉS DE LA TALLA----------------------       
-                first_size = p.sizes.first()
-                if first_size != None:
-                    product_type = first_size.product_type
-                p.type = product_type
+                # ----------------------EXTRAEMOS DATOS CON BEAUTIFUL SOUP------------------
+                web_code = BeautifulSoup(page_source, 'lxml')
+
+                # ----------------------EXTRAEMOS SECCION CON DATOS PRINCIPALES ------------------
+                PRODUCT_DIV_DATA_CLASS = "qMZa55 VHXqc_ rceRmQ _4NtqZU mIlIve"
+                product_data = web_code.find("div", class_=PRODUCT_DIV_DATA_CLASS)
+                # si no tiene este div no es un product, puede ser alguna promoción o una sección de outfits, saltamos esta iteración
+                if product_data == None:
+                    continue 
+
+                # ----------------------EXTRAEMOS NAME----------------------
+                PRODUCT_H1_NAME_CLASS = "OEhtt9 ka2E9k uMhVZi z-oVg8 pVrzNP w5w9i_ _1PY7tW _9YcI4f"
+                product_name_h1 = product_data.find("h1",class_=PRODUCT_H1_NAME_CLASS)
+                product_name = "Undefined"
+                if(product_name_h1 != None):
+                    product_name = product_name_h1.string
+
+                # ----------------------EXTRAEMOS IMG----------------------
+
+                PRODUCT_IMG_IMG_CLASS = "_6uf91T z-oVg8 u-6V88 ka2E9k uMhVZi FxZV-M _2Pvyxl JT3_zV EKabf7 mo6ZnF _1RurXL mo6ZnF PZ5eVw"
+                product_img = web_code.find("img", class_=PRODUCT_IMG_IMG_CLASS)["src"]
+
+                # ----------------------EXTRAEMOS AVG_RATING----------------------
+                # vamos a tener que iterar por varios resultados para ver cual es el de rating porque no hay un id o clase único del rating
+                PRODUCT_BUTTON_RATING_CLASS = "kMvGAR _6-WsK3 Md_Vex Nk_Omi _MmCDa to_CKO NN8L-8 K82if3"
+                posible_product_buttons_rating = product_data.find_all("button",class_=PRODUCT_BUTTON_RATING_CLASS)
+                for posible_product_button_rating in posible_product_buttons_rating:
+                    product_buttons_rating = posible_product_button_rating.find("div",class_="_0xLoFW FCIprz").find("div",class_="_0xLoFW")
+                    
+                    if product_buttons_rating !=None:
+                        product_rating_rating = product_buttons_rating["aria-label"].split("/")[0]
+                        product_rating_rating = float(product_rating_rating) 
+                
+                # ----------------------EXTRAEMOS BRAND----------------------
+                PRODUCT_SPAN_BRAND = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP ONArL- isiDul"
+                product_brand = "Undefined"
+                if(web_code.find("span",class_=PRODUCT_SPAN_BRAND) != None):
+                    product_brand = web_code.find("span",class_=PRODUCT_SPAN_BRAND).text
+                
+                # ----------------------EXTRAEMOS COLOR----------------------
+                PRODUCT_SPAN_COLOR = "u-6V88 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
+                product_color = web_code.find("span",class_=PRODUCT_SPAN_COLOR).text
+                    
+                # ----------------------EXTRAEMOS CURRENT_PRICE----------------------
+                PRODUCT_SPAN_CURRENT_PRICE = "uqkIZw ka2E9k uMhVZi dgII7d z-oVg8 _88STHx cMfkVL"
+                product_current_price = web_code.find("span",class_=PRODUCT_SPAN_CURRENT_PRICE).text
+                # Ajustamos la información a lo que necesitamos
+                product_current_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_current_price)))
+
+                # ----------------------EXTRAEMOS OLD_PRICE----------------------
+                PRODUCT_SPAN_OLD_PRICE = "uqkIZw ka2E9k uMhVZi FxZV-M z-oVg8 weHhRC ZiDB59"
+                product_old_price = web_code.find("span",class_=PRODUCT_SPAN_OLD_PRICE).text
+                # Ajustamos la información a lo que necesitamos
+                product_old_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_old_price)))
+
+                # ----------------------ALMACENAMOS PRODUCT EN LA DB----------------------
+                id_p = num_products  
+                num_products = num_products + 1
+                p = Product.objects.create(id = id_p,name = product_name, img = product_img, brand = product_brand, color= product_color,
+                current_price = product_current_price, old_price = product_old_price, avg_rating=product_rating_rating, url=link_product )
                 p.save()
+                # 
+                # 
+
+                # ----------------------EXTRAEMOS SIZES ----------------------
+                if(hasSizes):
+                    # la unica forma de extraer el tipo del producto es a través de las tallas asi que lo extraeremos aquí
+                    product_type = "Undefined"
+
+                    PRODUCT_DIV_SIZE = "zaI4jo JT3_zV _0xLoFW _78xIQ- EJ4MLB"
+                    size_divs = web_code.find_all("div", class_= PRODUCT_DIV_SIZE)
+
+                    for size_div in size_divs:
+                        PRODUCT_DIV_SIZE_1 = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 pVrzNP"
+                        PRODUCT_DIV_SIZE_2 = "_7Cm1F9 ka2E9k uMhVZi dgII7d z-oVg8 D--idb"
+
+                        if(size_div.find("span",class_=PRODUCT_DIV_SIZE_1) != None):
+                            product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_1).text
+                            
+                        elif(size_div.find("span",class_=PRODUCT_DIV_SIZE_2) != None):
+                            product_size = size_div.find("span",class_=PRODUCT_DIV_SIZE_2).text
+
+                # ----------------------ALMACENAMOS SIZE EN LA DB----------------------
+                        if product_size not in dict_s:
+                            id_s = num_sizes
+
+                            if product_size in sizes_clothing:
+                                product_type = "Clothing"
+
+                            else:
+                                try:
+                                    # aquí convertimos mapeamos integers a double: talla 40 -> 40.0
+                                    product_size = str(float(product_size))
+                                except:
+                                    pass
+                                if product_size in sizes_shoes:
+                                    product_type = "Shoes"
+                                else:
+                                    product_type = "Undetermined"
+                                
+                            s = Size.objects.create(id = id_s, size=product_size, product_type = product_type)
+                            s.save()
+                            dict_s[product_size]=s
+                            num_sizes = num_sizes + 1 
+                        
+                # ----------------------ASOCIAMOS LAS TALLAS DEL PRODUCTO----------------------                    
+                        p.sizes.add(dict_s[product_size])
+
+                # ----------------------ACTUALIZAMOS EL TIPO DEL PRODUCTO A TRAVÉS DE LA TALLA----------------------       
+                    first_size = p.sizes.first()
+                    if first_size != None:
+                        product_type = first_size.product_type
+                    p.type = product_type
+                    p.save()
 
 
-            dict_p[id_p] = p
+                dict_p[id_p] = p
 
-            # ----------------------EXTRAEMOS LOS RATINGS (VALORACIONES A LOS PRODUCTOS)----------------------
-            PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
-            product_ratings_divs = web_code.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
+                # ----------------------EXTRAEMOS LOS RATINGS (VALORACIONES A LOS PRODUCTOS)----------------------
+                PRODUCT_DIV_RATINGS_CLASS = "DvypSJ aC4gN7 _1o06TD Rft9Ae lTABpz"
+                product_ratings_divs = web_code.find_all("div",class_=PRODUCT_DIV_RATINGS_CLASS)
 
-            for product_rating_div in product_ratings_divs:
-                
-                PRODUCT_H5_RATINGS_CLIENT_CLASS = "ZcZXP0 ka2E9k uMhVZi z-oVg8 pVrzNP"
-                product_rating_client = product_rating_div.find("h5",class_=PRODUCT_H5_RATINGS_CLIENT_CLASS).string
-                user_name = product_rating_client
+                for product_rating_div in product_ratings_divs:
+                    
+                    PRODUCT_H5_RATINGS_CLIENT_CLASS = "ZcZXP0 ka2E9k uMhVZi z-oVg8 pVrzNP"
+                    product_rating_client = product_rating_div.find("h5",class_=PRODUCT_H5_RATINGS_CLIENT_CLASS).string
+                    user_name = product_rating_client
 
-            # ----------------------ALMACENAMOS USUARIO QUE DEJÓ LA VALORACIÓN EN LA BD----------------------
-                if user_name not in dict_u:
-                    id_u = num_users
-                    u = UserInformation.objects.create(id = id_u, name=product_rating_client)
-                    dict_u[user_name]=u
-                    num_users = num_users + 1 
+                # ----------------------ALMACENAMOS USUARIO QUE DEJÓ LA VALORACIÓN EN LA BD----------------------
+                    if user_name not in dict_u:
+                        id_u = num_users
+                        u = UserInformation.objects.create(id = id_u, name=product_rating_client)
+                        dict_u[user_name]=u
+                        num_users = num_users + 1 
 
-            # ----------------------ALMACENAMOS RATINGS EN LA BD----------------------
-                
-                PRODUCT_DIV_RATING_CLASS = "qMZa55 fg5xcc"
-                product_rating_div = product_rating_div.find("div",class_=PRODUCT_DIV_RATING_CLASS)
+                # ----------------------ALMACENAMOS RATINGS EN LA BD----------------------
+                    
+                    PRODUCT_DIV_RATING_CLASS = "qMZa55 fg5xcc"
+                    product_rating_div = product_rating_div.find("div",class_=PRODUCT_DIV_RATING_CLASS)
 
-                PRODUCT_DIV_RATING_CLASS = "_0xLoFW"
-                product_rating_div = product_rating_div.find("div",class_=PRODUCT_DIV_RATING_CLASS)
+                    PRODUCT_DIV_RATING_CLASS = "_0xLoFW"
+                    product_rating_div = product_rating_div.find("div",class_=PRODUCT_DIV_RATING_CLASS)
 
-                # print("product_rating_div: "+ str(product_rating_div))
-                product_rating_rating = product_rating_div["aria-label"].split("/")[0]
-                print("product_rating_rating: "+ str(product_rating_rating))
+                    # print("product_rating_div: "+ str(product_rating_div))
+                    product_rating_rating = product_rating_div["aria-label"].split("/")[0]
+                    print("product_rating_rating: "+ str(product_rating_rating))
+                    id_r = num_ratings
+                    r = Rating.objects.create(id = id_r, user = dict_u[user_name], product = dict_p[id_p], rating = product_rating_rating)
+                    dict_r[user_name] = r  
+                    num_ratings = num_ratings + 1
+
+                # ----------------------ALMACENAMOS RATING DEL USUARIO DE PRUEBA EN LA BD----------------------
                 id_r = num_ratings
-                r = Rating.objects.create(id = id_r, user = dict_u[user_name], product = dict_p[id_p], rating = product_rating_rating)
-                dict_r[user_name] = r  
+                r = Rating.objects.create(id = id_r, user = dict_u["Test Person"], product = dict_p[id_p], rating = random.uniform(0.0, 5.0))
+                dict_r["Test Person"] = r  
                 num_ratings = num_ratings + 1
-
-            # ----------------------ALMACENAMOS RATING DEL USUARIO DE PRUEBA EN LA BD----------------------
-            id_r = num_ratings
-            r = Rating.objects.create(id = id_r, user = dict_u["Test Person"], product = dict_p[id_p], rating = random.uniform(0.0, 5.0))
-            dict_r["Test Person"] = r  
-            num_ratings = num_ratings + 1
 
     return (num_products,num_users,num_ratings)
         
@@ -420,7 +422,7 @@ def loadDict():
         rating = float(ra.rating)
         Prefs.setdefault(user, {})
         Prefs[user][product] = rating
-    print(Prefs)
+    # print(Prefs)
     shelf['Prefs']=Prefs
     shelf['ItemsPrefs']=transformPrefs(Prefs)
     shelf['SimItems']=calculateSimilarItems(Prefs, n=10)
