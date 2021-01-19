@@ -24,25 +24,19 @@ def sim_pearson(prefs, p1, p2):
     # Get the list of mutually rated items
     si = {}
     for item in prefs[p1]:
-        # print("item p1:--------" + str(item)) 
         if item in prefs[p2]:
-            # print("coincide con p2:--------"+ str(item)) 
             si[item] = 1
 
     # if they are no ratings in common, return 0
     if len(si) == 0: 
-        # print("es por el len")
         return 0
 
     # Sum calculations
     n = len(si)
-    # print("item n:--------" + str(n)) 
 
     # Sums of all the preferences
     sum1 = sum([prefs[p1][it] for it in si])
     sum2 = sum([prefs[p2][it] for it in si])
-    # print("item sum1:--------" + str(sum1)) 
-    # print("item sum2:--------" + str(sum2)) 
 
     # Sums of the squares
     sum1Sq = sum([pow(prefs[p1][it], 2) for it in si])
@@ -50,7 +44,6 @@ def sim_pearson(prefs, p1, p2):
 
     # Sum of the products
     pSum = sum([prefs[p1][it] * prefs[p2][it] for it in si])
-    # print("item pSum:--------" + str(pSum))
 
     # Calculate r (Pearson score)
     
@@ -80,21 +73,23 @@ def topMatches(prefs, person, n=5, similarity=sim_pearson):
 def getRecommendations(prefs, person, similarity=sim_pearson):
     totals = {}
     simSums = {}
-    # print("prefs--------")
-    # print(prefs)
+    others = []
+  
     for other in prefs:
-        # print("other--------")
-        # print(str(other) + ", " + str(person) + ", ")
+  
         # don't compare me to myself
         if other == person: continue
         sim = similarity(prefs, person, other)
         # ignore scores of zero or lower
         if sim <= 0: 
-            # print("sim:"+ str(sim) + "---------")
+    
             continue
+        
+ 
+        others.append(other)
+
         for item in prefs[other]:
-            # print("item---------")
-            # print(item)
+            
             # only score movies I haven't seen yet
             if item not in prefs[person] or prefs[person][item] == 0:
                 
@@ -111,7 +106,7 @@ def getRecommendations(prefs, person, similarity=sim_pearson):
     rankings.sort()
     rankings.reverse()
     
-    return rankings
+    return (rankings, others)
 
 def transformPrefs(prefs):
     result = {}
@@ -148,7 +143,7 @@ def getRecommendedItems(prefs, itemMatch, user):
     for (item, rating) in userRatings.items():
         # Loop over items similar to this one
         for (similarity, item2) in itemMatch[item]:
-            print (item2)
+            
             # Ignore if this user has already rated this item
             if item2 in userRatings: continue
             # Weighted sum of rating times similarity

@@ -1,27 +1,4 @@
 {% extends 'base.html' %}
-{% comment %} 
-{% block encabezado %}
-<h1> Productos Mejor Valorados </h1>
-{% endblock %}
-
-{% block contenido %}
-			{% regroup products by name as grouped %}
-	    	{% for group in grouped %}
-		    	<h3>Rating: {{group.grouper}} ({{group.list|length}} products)</h3>
-		    		{% for row in group.list %}
-			    		<dt><b>Id: </b>{{row.id}}</dt>
-			    		<dd><b>Name: </b>{{row.name}} </dd>
-			    		 <dd> <b>Generos: </b> 
-			    		 {% for gen in row.generos.all %}
-			    			{{gen.nombre}} 
-			    		{% endfor %} 
-			    		</dd>		    
-			{% endfor %}
-		    	</div>
-	    	{% endfor %}
-{% endblock %}
-
-{% extends 'base.html' %} {% endcomment %}
 {% load static %}
 
 {% block encabezado %}
@@ -29,34 +6,14 @@
 {% endblock %}
 
   {% block contenido %}
-			{% comment %} {% for row in products %}
-				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}} <b>Color: </b>{{row.color}} <b>Brand: </b>{{row.brand}} <b>Type: </b>{{row.type}} <b>Price: </b>{{row.current_price}} <b>Old Price: </b>{{row.old_price}}</dt>
-				
-				{% for size in row.sizes.all %}
-					<dt><b>Product type: </b>{{size.product_type}} <b>Size: </b>{{size.size}}</dt>
-					</dd>		    
-				{% endfor %}
-			    </dd>		    
-			{% endfor %}{% for row in users %}
-				<dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}}</dt>
-			    </dd>		    
-			{% endfor %}
-			
-			{% for row in ratings %}
-				<dt><b>Id: </b>{{row.id}} <b>User id: </b>{{row.user.id}} <b>User name: </b>{{row.user.name}} <b>Product name: </b>{{row.product.name}} <b>Rating: </b>{{row.rating}}</dt>
-			
-			    </dd>		    
-			{% endfor %} {% endcomment %}
-
-			<!-- Portfolio-->
-
+		
 		<section class="page-section bg-primary" id="about">
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-lg-8 text-center">
-                        <h2 class="text-white mt-0">We've got what you need!</h2>
+                        <h2 class="text-white mt-0">Top Rated Products</h2>
                         <hr class="divider light my-4" />
-                        <p class="text-white-50 mb-4">Start Bootstrap has everything you need to get your new website up and running in no time! Choose one of our open source, free to download, and easy to use themes! No strings attached!</p>
+                        <p class="text-white-50 mb-4">These are the same products of Products section but grouped and ordered by the overall user rating of the product</p>
                     </div>
                 </div>
             </div>
@@ -67,7 +24,9 @@
         <div id="portfolio">
 			{% regroup products by avg_rating as grouped %}
 	    	{% for group in grouped %}
-		    <h3>Rating: {{group.grouper}} ({{group.list|length}} products)</h3>
+			<h2 class="text-center mt-0">Rating: {{group.grouper}} ({{group.list|length}} products) </h2>
+            <hr class="divider my-4" />
+		    {% comment %} <h3>Rating: {{group.grouper}} ({{group.list|length}} products)</h3> {% endcomment %}
 
             <div class="container-fluid p-0">
                 <div class="row no-gutters">

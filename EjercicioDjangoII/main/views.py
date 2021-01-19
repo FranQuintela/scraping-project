@@ -113,7 +113,7 @@ def populateDB():
                     driver.find_element(By.CSS_SELECTOR, SHOW_RATINGS_BUTTON).send_keys('\n')
 
                 # ----------------------CARGAMOS MAS RATINGS------------------
-                    # print(page_source)
+                    
                     hasMoreRatings = True
                     while hasMoreRatings is True:
                         try:
@@ -121,7 +121,7 @@ def populateDB():
                         except:
                             hasMoreRatings = False
                     
-                    # print(page_source)
+                    
                     # for x in range(len(more_buttons)):
                     #     if more_buttons[x].is_displayed():
                     #         driver.execute_script("arguments[0].click();", more_buttons[x])
@@ -273,9 +273,8 @@ def populateDB():
                     PRODUCT_DIV_RATING_CLASS = "_0xLoFW"
                     product_rating_div = product_rating_div.find("div",class_=PRODUCT_DIV_RATING_CLASS)
 
-                    # print("product_rating_div: "+ str(product_rating_div))
+                    
                     product_rating_rating = product_rating_div["aria-label"].split("/")[0]
-                    print("product_rating_rating: "+ str(product_rating_rating))
                     id_r = num_ratings
                     r = Rating.objects.create(id = id_r, user = dict_u[user_name], product = dict_p[id_p], rating = product_rating_rating)
                     dict_r[user_name] = r  
@@ -414,7 +413,6 @@ def loadDict():
     Prefs={}   # matriz de usuarios y puntuaciones a cada a items
     shelf = shelve.open("dataRS.dat")
     ratings = Rating.objects.all()
-    # print(ratings)
     for ra in ratings:
         user = int(ra.user.id)
         product = int(ra.product.id)
@@ -422,7 +420,6 @@ def loadDict():
         rating = float(ra.rating)
         Prefs.setdefault(user, {})
         Prefs[user][product] = rating
-    # print(Prefs)
     shelf['Prefs']=Prefs
     shelf['ItemsPrefs']=transformPrefs(Prefs)
     shelf['SimItems']=calculateSimilarItems(Prefs, n=10)
@@ -445,15 +442,18 @@ def recommendedProductsUser(request):
         form = UserForm(request.GET, request.FILES)
         if form.is_valid():
             idUser = form.cleaned_data['id']
-            print("idUser: "+ idUser)
             user = get_object_or_404(UserInformation, pk=idUser)
             shelf = shelve.open("dataRS.dat")
             Prefs = shelf['Prefs']
-            print(Prefs)
             shelf.close()
-            rankings = getRecommendations(Prefs,int(idUser))
-
-            recommended = rankings[:2]
+            rankings = getRecommendations(Prefs,int(idUser))[0]
+            others = getRecommendations(Prefs,int(idUser))[1]
+            message = "We have compared this user product's rating and compared it to other users with similar ratings and these are the recommendations that came out"
+            if len(rankings) == 0:
+                message = "Bad luck with this user, you can still try with: 1"
+                for other in others:
+                    message += ", " + str(other)
+            recommended = rankings[:4]
             products = []
             scores = []
             for re in recommended:
@@ -462,7 +462,7 @@ def recommendedProductsUser(request):
                 
             items= zip(products,scores)
             
-            return render(request,'recommendationItems.html', {'user': user, 'items': items})
+            return render(request,'recommendationItems.html', {'user': user, 'items': items, 'message': message})
 
     form = UserForm()
     return render(request,'search_user.html', {'form': form})
