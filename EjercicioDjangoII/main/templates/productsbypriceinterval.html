@@ -19,7 +19,8 @@
                         <hr class="divider light my-4" />
                         <p class="text-white-50 mb-4">You can specify the desired price interval using the format: LowestPrice HighestPrice.
 						 It is important to leave a blank space in between. Ej: 10 20</p>
-                         
+                        <p class="text-white-50 mb-4">{{message}}</p>
+
 						<form class="form-control" id="formulario" method="post" action=''>{% csrf_token %}
 							 {{formulario.as_p}}
                             <p><input type='submit' value='Search Products' class="btn btn-light btn-xl js-scroll-trigger"/></p>

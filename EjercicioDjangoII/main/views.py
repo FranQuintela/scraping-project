@@ -18,7 +18,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 # Woosh
 from whoosh.index import create_in,open_dir
-from whoosh.fields import Schema, TEXT, DATETIME, KEYWORD
+from whoosh.fields import Schema, TEXT, DATETIME, KEYWORD, NUMERIC
 from whoosh.qparser import QueryParser, MultifieldParser, OrGroup
 import re, os, shutil
 import random
@@ -178,12 +178,14 @@ def populateDB():
                 product_current_price = web_code.find("span",class_=PRODUCT_SPAN_CURRENT_PRICE).text
                 # Ajustamos la información a lo que necesitamos
                 product_current_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_current_price)))
+                product_current_price = float(product_current_price) 
 
                 # ----------------------EXTRAEMOS OLD_PRICE----------------------
                 PRODUCT_SPAN_OLD_PRICE = "uqkIZw ka2E9k uMhVZi FxZV-M z-oVg8 weHhRC ZiDB59"
                 product_old_price = web_code.find("span",class_=PRODUCT_SPAN_OLD_PRICE).text
                 # Ajustamos la información a lo que necesitamos
                 product_old_price = re.sub(',', '.', re.sub('€', '', re.sub('desde ', '', product_old_price)))
+                product_old_price = float(product_old_price) 
 
                 # ----------------------ALMACENAMOS PRODUCT EN LA DB----------------------
                 id_p = num_products  
@@ -293,7 +295,7 @@ def save_data():
     
     # ----------------------DEFINIMOS ESTRUCTURA CON LAS PROPIEDADES A GUARDAR----------------------
     schem = Schema(name=TEXT(stored=True), img=TEXT, color=TEXT(stored=True),  brand=TEXT(stored=True),  type=TEXT(stored=True),
-    current_price=TEXT(stored=True))
+    current_price=NUMERIC(stored=True))
 
     # sizes=KEYWORD(stored=True,commas=True)
 
@@ -367,7 +369,7 @@ def search_products_by_type(request):
             with ix.searcher() as searcher:
                 
                 query = QueryParser("type", ix.schema).parse(type)
-                results = searcher.search(query) 
+                results = searcher.search(query, limit=20) 
                 for r in results: 
                     product = Product.objects.all().filter(name=r['name']).first()
                     products.append(product)
@@ -381,25 +383,29 @@ def search_products_by_price_interval(request):
 
     formulario = PriceForm()
     products = []
+    message = ""
 
     if request.method=='POST':
         formulario = PriceForm(request.POST)
         if formulario.is_valid():
             price_interval = formulario.cleaned_data['price_interval']
-
             ix=open_dir("Index")      
             with ix.searcher() as searcher:
                 
-                aux = price_interval.split()
-                price_interval = '['+ aux[0] + ' TO ' + aux[1] +']'
-                query = QueryParser("current_price", ix.schema).parse(price_interval)
+                try:
+                    aux = price_interval.split()
+                    price_interval = '['+ aux[0] + ' TO ' + aux[1] +']'
+                    query = QueryParser("current_price", ix.schema).parse(price_interval)
 
-                results = searcher.search(query) 
-                for r in results: 
-                    product = Product.objects.all().filter(name=r['name']).first()
-                    products.append(product)
+                    results = searcher.search(query, limit=20) 
+                    for r in results: 
+                        product = Product.objects.all().filter(name=r['name']).first()
+                        products.append(product)
+                except:
+                    message = "The price interval is not in the correct format, please try again"
+                    pass
 
-    return render(request, 'productsbypriceinterval.html', {'formulario':formulario, 'products':products})
+    return render(request, 'productsbypriceinterval.html', {'formulario':formulario, 'products':products, 'message': message})
 
     # ----------------------SISTEMAS DE RECOMENDACIÓN---------------------- 
 

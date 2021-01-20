@@ -22,8 +22,8 @@ class Product(models.Model):
     color = models.TextField(verbose_name='Color')
     brand = models.TextField(verbose_name='Brand') 
     type = models.TextField(verbose_name='Type') 
-    current_price = models.TextField(verbose_name='CurrentPrice')
-    old_price = models.TextField(verbose_name='OldPrice')
+    current_price = models.FloatField(verbose_name='CurrentPrice')
+    old_price = models.FloatField(verbose_name='OldPrice')
     avg_rating = models.FloatField(verbose_name='AvgRating', validators=[MinValueValidator(1), MaxValueValidator(5)], default=0.0)
     url = models.TextField(verbose_name='Url', default="Undefined")
 
