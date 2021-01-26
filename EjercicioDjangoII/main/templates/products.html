@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+  {% block contenido %}
+
+		<section class="page-section bg-primary" id="about">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="text-white mt-0">Products</h2>
+                        <hr class="divider light my-4" />
+                        <p class="text-white-50 mb-4">These are the products that we managed to fetch from Zalando's on sale products. You can click on each one of them to navigate to the original source</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+		<section class="page-section" id="about">
+		
+        <div id="portfolio">
+            <div class="container-fluid p-0">
+                <div class="row no-gutters">
+				{% for row in products %}
+					<div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box container" href={{row.url}}>
+						<div class="row">
+							<div class="col-lg-4 col-sm-6">
+								<img class="img-fluid" src={{row.img}} alt="" />
+							</div>
+							<div class="col p-2">
+							<b>Size: </b>
+							{% for size in row.sizes.all %}
+								{{size.size}}, </dt>			    
+							{% endfor %}
+							</br>
+							<b>Old price: </b> {{row.old_price}}</br>
+							<b>Price: </b> {{row.current_price}}</br>
+							<b>Brand: </b> {{row.brand}}</br>
+							<b>Color: </b> {{row.color}}</br>
+							<b>Rating: </b> {{row.avg_rating}}</br>
+
+							</div>
+								
+							<div class="portfolio-box-caption">
+								<div class="project-category text-white-50">{{row.type}}</div>
+								<div class="project-name">{{row.name}}</div>
+							</div>
+						</div>	
+                        </a>
+                    </div>
+
+					
+				{% endfor %}
+                    
+                </div>
+            </div>
+        </div>
+		</section>
+  {% endblock %}

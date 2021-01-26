@@ -1,0 +1,25 @@
+
+
+{% extends 'base.html' %}
+
+{% block encabezado %}
+<h1> Carga de la Base de datos. Confirmacion </h1>
+{% endblock %}
+
+  {% block contenido %}
+
+        <section class="page-section bg-primary" id="about">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="text-white mt-0">Update database</h2>
+                        <hr class="divider light my-4" />
+                        <p class="text-white-50 mb-4">This process is slow, deletes the current database and requires an internet connection</p>
+                        <form id='formulario' method='post' action=''>{% csrf_token %}
+                          <input type="submit" name="Aceptar" value="Update DB" class="btn btn-light btn-xl js-scroll-trigger">
+                        </form> 
+                    </div>
+                </div>
+            </div>
+        </section>
+  {% endblock %}
