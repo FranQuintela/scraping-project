@@ -5,12 +5,7 @@
 {% endblock %}
 
   {% block contenido %}
-  {% comment %} <h3>AVISO: Este proceso es lento, borra la base de datos actual y requiere conexion a internet</h3>
-    <form id='formulario' method='post' action=''>{% csrf_token %}
-		<input type="submit" name="Aceptar" value="Aceptar">
-		<input type="submit" name="Cancelar" value="Cancelar">
-	</form>  {% endcomment %}
-  <!-- About-->
+
         <section class="page-section bg-primary" id="about">
             <div class="container">
                 <div class="row justify-content-center">
@@ -25,7 +20,6 @@
 							 {{formulario.as_p}}
                             <p><input type='submit' value='Search Products' class="btn btn-light btn-xl js-scroll-trigger"/></p>
 						</form>
-                        {% comment %} <a class="btn btn-light btn-xl js-scroll-trigger" href="#services">Get Started!</a> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -57,7 +51,6 @@
 							<b>Color: </b> {{row.color}}</br>
 							<b>Rating: </b> {{row.avg_rating}}</br>
 
-								{% comment %} <div class="project-name "> {{row.name}} </div> {% endcomment %}
 							</div>
 								
 							<div class="portfolio-box-caption">
@@ -68,12 +61,6 @@
                         </a>
                     </div>
 
-					{% comment %} <dt><b>Id: </b>{{row.id}} <b>Name: </b>{{row.name}} <b>Color: </b>{{row.color}} <b>Brand: </b>{{row.brand}} <b>Type: </b>{{row.type}} <b>Price: </b>{{row.current_price}} <b>Old Price: </b>{{row.old_price}}</dt> {% endcomment %}
-					
-					{% comment %} {% for size in row.sizes.all %}
-						<dt><b>Product type: </b>{{size.product_type}} <b>Size: </b>{{size.size}}</dt>
-						</dd>		    
-					{% endfor %} {% endcomment %}
 				{% endfor %}
                     
                 </div>

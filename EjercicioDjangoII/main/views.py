@@ -16,6 +16,8 @@ from main.forms import TypeForm, PriceForm, UserForm
 # For Selenium to work, it must access the browser driver.
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import ui
+from selenium.webdriver.support import expected_conditions as EC
 # Woosh
 from whoosh.index import create_in,open_dir
 from whoosh.fields import Schema, TEXT, DATETIME, KEYWORD, NUMERIC
@@ -109,8 +111,16 @@ def populateDB():
                 SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) .z-oVg8"
                 hasRatings = len((driver.find_elements_by_css_selector(SHOW_RATINGS_BUTTON))) > 0
                 if hasRatings:
-                    SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) ._0xLoFW "
-                    driver.find_element(By.CSS_SELECTOR, SHOW_RATINGS_BUTTON).send_keys('\n')
+                    ratings = ui.WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".-NV4KN:nth-child(2) button")))
+                    try:
+                        ratings.click()
+                        print("Ratings succesfully collected")  
+                    except:
+                        pass
+
+                      
+                    # SHOW_RATINGS_BUTTON = ".-NV4KN:nth-child(2) button"
+                    # driver.find_element(By.CSS_SELECTOR, SHOW_RATINGS_BUTTON).send_keys('\n')
 
                 # ----------------------CARGAMOS MAS RATINGS------------------
                     
@@ -422,7 +432,6 @@ def loadDict():
     for ra in ratings:
         user = int(ra.user.id)
         product = int(ra.product.id)
-        print("Product url:" + ra.product.url + ", id= " + str(ra.product.id) )
         rating = float(ra.rating)
         Prefs.setdefault(user, {})
         Prefs[user][product] = rating
