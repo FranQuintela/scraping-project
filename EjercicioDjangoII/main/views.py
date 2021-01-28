@@ -33,10 +33,10 @@ options.add_argument('--headless')
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36";
 options.add_argument("user-agent=%s"+ userAgent)
 
+# ASEGURARSE DE TENER ESTA DIRECCIÓN CORRECTAMENTE DEFINIDA
 driver = webdriver.Chrome("C:/Users/xisco/Documents/scraping-project/EjercicioDjangoII/chromedriver.exe", chrome_options=options)
 
 import time
-
 
 
 #función auxiliar que hace scraping en la web y carga los datos en la base datos
